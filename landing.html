@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StaffSync — Enterprise HR Platform | Treffer Technologies</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--red:#C41E1E;--red2:#A81818;--red-glow:rgba(196,30,30,0.4);}
+html{scroll-behavior:smooth;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:#080202;color:#fff;overflow-x:hidden;cursor:none;}
+#canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg-fixed{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 50% at 20% 20%,rgba(196,30,30,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 80% 80%,rgba(120,10,10,0.12) 0%,transparent 60%),#080202;}
+#cur{position:fixed;width:10px;height:10px;background:#fff;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:opacity 0.2s;}
+@media(hover:none),(pointer:coarse){#cur{display:none!important;}body{cursor:auto!important;}}
+
+/* NAV */
+.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:rgba(8,2,2,0.85);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.08);border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.06);width:calc(100% - 40px);max-width:1100px;gap:20px;}
+.nav-brand{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:20px;color:#C41E1E;text-shadow:0 0 24px rgba(196,30,30,0.5);white-space:nowrap;flex-shrink:0;}
+.nav-links{display:flex;gap:4px;flex:1;justify-content:center;}
+.nav-link{padding:6px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.35);border:none;background:none;cursor:pointer;font-family:inherit;border-radius:8px;transition:color 0.2s,background 0.2s;white-space:nowrap;}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,0.06);}
+.nav-cta{padding:7px 18px;background:var(--red);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 0 20px rgba(196,30,30,0.4);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
+.nav-cta:hover{background:var(--red2);transform:translateY(-1px);box-shadow:0 0 32px rgba(196,30,30,0.6);}
+@media(max-width:768px){.nav-links{display:none;}.nav{padding:0 16px;}}
+
+/* HERO */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);margin-bottom:20px;opacity:0;animation:fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;}
+.hero-title{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:clamp(52px,10vw,96px);letter-spacing:-0.02em;color:#fff;line-height:1;margin-bottom:16px;opacity:0;animation:fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.35s forwards;}
+.hero-title span{color:#C41E1E;text-shadow:0 0 60px rgba(196,30,30,0.6),0 0 120px rgba(196,30,30,0.3);}
+.hero-sub{font-size:clamp(14px,2vw,18px);color:rgba(255,255,255,0.4);max-width:560px;line-height:1.7;margin-bottom:40px;opacity:0;animation:fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;}
+.hero-btn{position:relative;padding:18px 48px;background:var(--red);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:-0.01em;overflow:hidden;box-shadow:0 0 40px rgba(196,30,30,0.5),0 8px 24px rgba(196,30,30,0.3);transition:all 0.3s cubic-bezier(0.34,1.2,0.64,1);opacity:0;animation:fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.65s forwards;}
+.hero-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,transparent 60%);border-radius:14px;}
+.hero-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 0 60px rgba(196,30,30,0.7),0 12px 40px rgba(196,30,30,0.4);}
+.hero-btn:active{transform:scale(0.97);}
+.hero-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);animation:rpl 0.7s linear;pointer-events:none;}
+@keyframes rpl{to{transform:scale(4);opacity:0;}}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:32px;opacity:0;animation:fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;}
+.hero-tag{padding:5px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:99px;font-size:11px;color:rgba(255,255,255,0.4);}
+
+/* FLOATING CARDS */
+.float-cards{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.fc{position:absolute;background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px;font-size:12px;animation:float linear infinite;}
+.fc-1{top:18%;left:4%;width:160px;animation-duration:7s;animation-delay:0s;}
+.fc-2{top:25%;right:4%;width:170px;animation-duration:8s;animation-delay:-2s;}
+.fc-3{bottom:22%;left:6%;width:150px;animation-duration:6.5s;animation-delay:-1s;}
+.fc-4{bottom:28%;right:5%;width:160px;animation-duration:9s;animation-delay:-3s;}
+.fc-5{top:50%;left:1%;width:140px;animation-duration:7.5s;animation-delay:-1.5s;}
+@media(max-width:900px){.fc{display:none;}}
+@keyframes float{0%,100%{transform:translateY(0px) rotate(0deg);}33%{transform:translateY(-12px) rotate(0.5deg);}66%{transform:translateY(6px) rotate(-0.5deg);}}
+.fc-label{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);margin-bottom:6px;}
+.fc-val{font-size:20px;font-weight:700;color:#fff;margin-bottom:2px;}
+.fc-sub{font-size:10px;color:rgba(255,255,255,0.3);}
+.fc-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;margin-right:5px;box-shadow:0 0 6px rgba(74,222,128,0.8);}
+
+/* STRIP */
+.strip{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);padding:20px 0;overflow:hidden;background:rgba(255,255,255,0.01);}
+.strip-track{display:flex;gap:48px;animation:marquee 30s linear infinite;white-space:nowrap;}
+.strip-item{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.25);letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0;}
+.strip-dot{width:4px;height:4px;border-radius:50%;background:var(--red);}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* SECTION */
+section{position:relative;z-index:1;padding:100px 20px;}
+.sec-center{text-align:center;margin-bottom:64px;}
+.sec-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);margin-bottom:12px;}
+.sec-title{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:clamp(28px,5vw,48px);letter-spacing:-0.02em;margin-bottom:12px;color:#fff;}
+.sec-sub{font-size:15px;color:rgba(255,255,255,0.35);max-width:500px;margin:0 auto;line-height:1.7;}
+
+/* MODULES GRID */
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:1100px;margin:0 auto;}
+.mod-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);transform-style:preserve-3d;cursor:default;opacity:0;transform:translateY(24px);}
+.mod-card.visible{opacity:1;transform:translateY(0);}
+.mod-card:hover{border-color:rgba(196,30,30,0.3);background:rgba(196,30,30,0.04);transform:translateY(-4px) rotateX(2deg) rotateY(-1deg);box-shadow:0 20px 60px rgba(0,0,0,0.4),0 0 40px rgba(196,30,30,0.08);}
+.mod-icon{width:44px;height:44px;background:rgba(196,30,30,0.12);border:1px solid rgba(196,30,30,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;}
+.mod-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-0.02em;}
+.mod-desc{font-size:13px;color:rgba(255,255,255,0.35);line-height:1.7;margin-bottom:16px;}
+.mod-features{display:flex;flex-wrap:wrap;gap:6px;}
+.mod-feat{padding:3px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:99px;font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;}
+
+/* ROLES */
+.roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;max-width:1100px;margin:0 auto;}
+.role-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px;opacity:0;transform:translateY(24px);transition:all 0.4s cubic-bezier(0.16,1,0.3,1);}
+.role-card.visible{opacity:1;transform:translateY(0);}
+.role-card:hover{border-color:rgba(196,30,30,0.25);transform:translateY(-3px);}
+.role-icon{font-size:32px;margin-bottom:14px;}
+.role-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;}
+.role-desc{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:16px;line-height:1.6;}
+.role-perms{display:flex;flex-direction:column;gap:5px;}
+.role-perm{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.5);}
+.perm-check{width:14px;height:14px;border-radius:50%;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;color:#4ade80;}
+
+/* AUTH SECTION */
+.auth-wrap{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}
+@media(max-width:700px){.auth-wrap{grid-template-columns:1fr;}}
+.auth-mockup{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:32px;text-align:center;position:relative;overflow:hidden;}
+.auth-mockup::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(196,30,30,0.15) 0%,transparent 60%);pointer-events:none;}
+.auth-title-mock{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:32px;color:#C41E1E;text-shadow:0 0 24px rgba(196,30,30,0.5);margin-bottom:4px;}
+.auth-sub-mock{font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:24px;}
+.auth-field{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;height:42px;margin-bottom:10px;display:flex;align-items:center;padding:0 14px;font-size:13px;color:rgba(255,255,255,0.3);}
+.auth-field.active{border-color:rgba(196,30,30,0.5);box-shadow:0 0 0 3px rgba(196,30,30,0.1);}
+.auth-btn-mock{width:100%;height:44px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;margin-top:16px;box-shadow:0 0 24px rgba(196,30,30,0.4);}
+.auth-features{display:flex;flex-direction:column;gap:14px;}
+.auth-feat{display:flex;align-items:flex-start;gap:12px;}
+.auth-feat-icon{width:36px;height:36px;background:rgba(196,30,30,0.1);border:1px solid rgba(196,30,30,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px;}
+.auth-feat-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;}
+.auth-feat-desc{font-size:12px;color:rgba(255,255,255,0.3);line-height:1.5;}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:rgba(255,255,255,0.05);border-radius:20px;overflow:hidden;max-width:1100px;margin:0 auto;}
+.stat-item{background:#080202;padding:32px 24px;text-align:center;}
+.stat-num{font-size:36px;font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:4px;}
+.stat-num span{color:var(--red);}
+.stat-lbl{font-size:11px;color:rgba(255,255,255,0.25);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;}
+
+/* FINAL CTA */
+.cta-wrap{max-width:680px;margin:0 auto;text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:28px;padding:64px 40px;position:relative;overflow:hidden;}
+.cta-wrap::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(196,30,30,0.12) 0%,transparent 60%);pointer-events:none;}
+.cta-title{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:clamp(28px,5vw,44px);color:#fff;letter-spacing:-0.02em;margin-bottom:12px;}
+.cta-sub{font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;line-height:1.7;}
+.cta-btn{padding:18px 52px;background:var(--red);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 0 40px rgba(196,30,30,0.5);transition:all 0.3s cubic-bezier(0.34,1.2,0.64,1);position:relative;overflow:hidden;}
+.cta-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%);border-radius:14px;}
+.cta-btn:hover{transform:translateY(-3px);box-shadow:0 0 60px rgba(196,30,30,0.7);}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,0.05);padding:32px 20px;text-align:center;}
+.footer-brand{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:24px;color:#C41E1E;margin-bottom:8px;}
+.footer-sub{font-size:11px;color:rgba(255,255,255,0.15);}
+
+/* PAGE TRANSITION */
+#pt{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#080202;opacity:0;pointer-events:none;transition:opacity 0.5s;}
+#pt.show{opacity:1;pointer-events:all;}
+.pt-logo{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:42px;color:#C41E1E;text-shadow:0 0 40px rgba(196,30,30,0.6);opacity:0;animation:ptIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s forwards;}
+.pt-msg{font-size:13px;color:rgba(255,255,255,0.4);opacity:0;animation:ptIn 0.5s ease 0.5s forwards;}
+.pt-bar-w{width:120px;height:2px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;opacity:0;animation:ptIn 0.5s ease 0.6s forwards;}
+.pt-fill{height:100%;background:var(--red);width:0%;transition:width 1.2s cubic-bezier(0.16,1,0.3,1);box-shadow:0 0 10px rgba(196,30,30,0.8);}
+.pt-dots{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.pt-dot{position:absolute;border-radius:50%;background:#C41E1E;animation:ptDot linear infinite;}
+@keyframes ptIn{from{opacity:0;transform:scale(0.88);}to{opacity:1;transform:scale(1);}}
+@keyframes ptDot{0%{transform:translateY(110vh);opacity:0;}10%{opacity:1;}90%{opacity:0.5;}100%{transform:translateY(-10vh);opacity:0;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+/* DIVIDER */
+.divider{max-width:1100px;margin:0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);}
+</style>
+</head>
+<body>
+<div class="bg-fixed"></div>
+<canvas id="canvas"></canvas>
+<div id="cur"></div>
+
+<!-- PAGE TRANSITION -->
+<div id="pt">
+  <div class="pt-dots" id="ptDots"></div>
+  <div class="pt-logo">StaffSync</div>
+  <div class="pt-msg">Launching StaffSync...</div>
+  <div class="pt-bar-w"><div class="pt-fill" id="ptFill"></div></div>
+</div>
+
+
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="float-cards">
+    <div class="fc fc-1"><div class="fc-label">Present Today</div><div class="fc-val">42</div><div class="fc-sub"><span class="fc-dot"></span>of 47 employees</div></div>
+    <div class="fc fc-2"><div class="fc-label">Pending Leaves</div><div class="fc-val">7</div><div class="fc-sub">Awaiting approval</div></div>
+    <div class="fc fc-3"><div class="fc-label">This Month Payroll</div><div class="fc-val">₹8.4L</div><div class="fc-sub">Processed ✓</div></div>
+    <div class="fc fc-4"><div class="fc-label">Open Grievances</div><div class="fc-val">2</div><div class="fc-sub">Needs attention</div></div>
+    <div class="fc fc-5"><div class="fc-label">Attendance Rate</div><div class="fc-val">96%</div><div class="fc-sub">This week</div></div>
+  </div>
+  <div class="hero-eyebrow">Treffer Technologies · Enterprise HR Platform</div>
+  <h1 class="hero-title"><span>StaffSync</span></h1>
+  <p class="hero-sub">Smart HR management — attendance, leaves, payroll, employees, and company operations unified in one powerful platform.</p>
+  <button class="hero-btn" id="heroBtn" onclick="launch()">View StaffSync</button>
+  <div class="hero-tags">
+    <span class="hero-tag">Attendance Tracking</span>
+    <span class="hero-tag">Leave Management</span>
+    <span class="hero-tag">Payroll Processing</span>
+    <span class="hero-tag">Role-Based Access</span>
+    <span class="hero-tag">Wayne AI Assistant</span>
+    <span class="hero-tag">Real-time Analytics</span>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div class="strip">
+  <div class="strip-track" id="stripTrack"></div>
+</div>
+
+<!-- STATS -->
+<section style="padding:80px 20px;" id="features">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">13<span>+</span></div><div class="stat-lbl">Modules</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-lbl">Role Levels</div></div>
+    <div class="stat-item"><div class="stat-num">50<span>+</span></div><div class="stat-lbl">Employees</div></div>
+    <div class="stat-item"><div class="stat-num">100<span>%</span></div><div class="stat-lbl">Free &amp; Local</div></div>
+    <div class="stat-item"><div class="stat-num">0</div><div class="stat-lbl">Monthly Cost</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MODULES -->
+<section id="modules">
+  <div class="sec-center">
+    <div class="sec-eyebrow">Full Feature Set</div>
+    <div class="sec-title">Every module your team needs</div>
+    <div class="sec-sub">From daily attendance to monthly payroll — StaffSync handles the entire employee lifecycle.</div>
+  </div>
+  <div class="modules-grid" id="modulesGrid"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ROLES -->
+<section id="roles">
+  <div class="sec-center">
+    <div class="sec-eyebrow">Role-Based Access Control</div>
+    <div class="sec-title">The right access for every person</div>
+    <div class="sec-sub">Four distinct permission levels ensure data privacy and operational efficiency across your organization.</div>
+  </div>
+  <div class="roles-grid" id="rolesGrid"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- AUTH -->
+<section id="auth">
+  <div class="sec-center">
+    <div class="sec-eyebrow">Security &amp; Authentication</div>
+    <div class="sec-title">Premium login experience</div>
+    <div class="sec-sub">A cinematic, glassmorphism login interface with enterprise-grade security.</div>
+  </div>
+  <div class="auth-wrap">
+    <div class="auth-mockup">
+      <div class="auth-title-mock">StaffSync</div>
+      <div class="auth-sub-mock">Treffer Technologies — HR Portal</div>
+      <div class="auth-field active">TRF-DSG-001</div>
+      <div class="auth-field">••••••••••</div>
+      <div class="auth-btn-mock">Sign In</div>
+    </div>
+    <div class="auth-features">
+      <div class="auth-feat"><div class="auth-feat-icon">🔐</div><div><div class="auth-feat-title">Treffer Login ID System</div><div class="auth-feat-desc">Unique ID format per department: TRF-DSG-001, TRF-DAT-012, TRF-MKT-005</div></div></div>
+      <div class="auth-feat"><div class="auth-feat-icon">✨</div><div><div class="auth-feat-title">Animated Glassmorphism UI</div><div class="auth-feat-desc">3D gyroscope card effect, particle canvas, custom cursor and page transitions</div></div></div>
+      <div class="auth-feat"><div class="auth-feat-icon">🔄</div><div><div class="auth-feat-title">Forced First-Login Reset</div><div class="auth-feat-desc">Employees must set a new password on first login with strength validation</div></div></div>
+      <div class="auth-feat"><div class="auth-feat-icon">⏱️</div><div><div class="auth-feat-title">Session Management</div><div class="auth-feat-desc">30-minute inactivity timeout with warning toast and secure auto-logout</div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FINAL CTA -->
+<section>
+  <div class="cta-wrap">
+    <div class="sec-eyebrow">Ready to experience it?</div>
+    <div class="cta-title">Your entire HR workflow, in one place.</div>
+    <div class="cta-sub">Clock in. Apply leaves. Process payroll. Chat with Wayne AI. Everything is live and ready — built for Treffer Technologies.</div>
+    <button class="cta-btn" onclick="launch()">View StaffSync →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">StaffSync</div>
+  <div class="footer-sub">Built for Treffer Technologies &middot; Enterprise HR Platform &middot; &copy; 2025</div>
+</footer>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cur');
+if(window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+  let cx=0,cy=0;
+  document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;});
+  (function cl(){cur.style.left=cx+'px';cur.style.top=cy+'px';requestAnimationFrame(cl);})();
+}else{cur.style.display='none';document.body.style.cursor='auto';}
+
+// PARTICLES
+const cv=document.getElementById('canvas'),ct=cv.getContext('2d');
+let W,H;function rsz(){W=cv.width=innerWidth;H=cv.height=innerHeight;}rsz();window.addEventListener('resize',rsz);
+let MX=W/2,MY=H/2;document.addEventListener('mousemove',e=>{MX=e.clientX;MY=e.clientY;});
+class P{constructor(){this.r();}r(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-0.5)*0.2;this.vy=(Math.random()-0.5)*0.2;this.maxLife=Math.random()*300+150;this.age=0;this.rad=Math.random()*0.8+0.3;this.col=Math.random()>0.5?'196,30,30':'255,80,80';}step(){const dx=MX-this.x,dy=MY-this.y,d=Math.sqrt(dx*dx+dy*dy);if(d<220){this.vx+=(dx/d)*0.018;this.vy+=(dy/d)*0.018;}else{this.vx+=(Math.random()-0.5)*0.005;this.vy+=(Math.random()-0.5)*0.005;}this.vx*=0.97;this.vy*=0.97;this.x+=this.vx;this.y+=this.vy;this.age++;if(this.age>this.maxLife||this.x<0||this.x>W||this.y<0||this.y>H)this.r();}draw(){const a=this.age/this.maxLife,op=(a<0.1?a*10:a>0.9?(1-a)*10:1)*0.5;ct.beginPath();ct.arc(this.x,this.y,this.rad,0,Math.PI*2);ct.fillStyle='rgba('+this.col+','+op+')';ct.fill();}}
+const pts=[];for(let i=0;i<120;i++)pts.push(new P());
+function drawConns(){for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<70){ct.beginPath();ct.moveTo(pts[i].x,pts[i].y);ct.lineTo(pts[j].x,pts[j].y);ct.strokeStyle='rgba(196,30,30,'+(0.1*(1-d/70))+')';ct.lineWidth=0.4;ct.stroke();}}const dx=pts[i].x-MX,dy=pts[i].y-MY,d=Math.sqrt(dx*dx+dy*dy);if(d<150){ct.beginPath();ct.moveTo(pts[i].x,pts[i].y);ct.lineTo(MX,MY);ct.strokeStyle='rgba(255,60,60,'+(0.2*(1-d/150))+')';ct.lineWidth=0.5;ct.stroke();}}}
+(function loop(){ct.clearRect(0,0,W,H);drawConns();pts.forEach(p=>{p.step();p.draw();});requestAnimationFrame(loop);})();
+
+// STRIP
+const items=['Dashboard','Attendance','Leave Management','Payroll','Employees','Announcements','Grievances','Reports','Shifts','Settings','Notifications','Wayne AI','Celebrations','Profile'];
+const track=document.getElementById('stripTrack');
+[...items,...items].forEach(t=>{
+  const d=document.createElement('div');d.className='strip-item';
+  d.innerHTML='<span class="strip-dot"></span>'+t;
+  track.appendChild(d);
+});
+
+// MODULES DATA
+const modules=[
+  {icon:'📊',title:'Dashboard Overview',desc:'Real-time company pulse at a glance. Live clock in/out, today\'s attendance stats, leave balance cards, announcements and upcoming celebrations.',feats:['Live Clock In/Out','Present Today Stats','Leave Balance','Announcements','Celebrations Widget','Grievance Count']},
+  {icon:'📅',title:'Attendance Tracking',desc:'Complete attendance lifecycle management with calendar view, correction tools, overtime tracking and real-time "who\'s working now" panel.',feats:['Monthly Calendar View','Clock In / Clock Out','Late Detection','Half-Day Tracking','Overtime Hours','Admin Corrections']},
+  {icon:'🏖️',title:'Leave Management',desc:'Full leave workflow from application to approval. Supports CL, SL, EL, Comp-Off and LOP with role-based approval chains.',feats:['Apply Leave','Balance Tracking','Pending Approvals','Half-Day Support','LOP Auto-Trigger','Leave Calendar']},
+  {icon:'👥',title:'Employee Directory',desc:'Complete employee management with searchable directory, department filters, profile cards and auto-generated Login IDs.',feats:['Search & Filter','Add Employee','Auto Login ID','Department Groups','Role Assignment','Active/Inactive']},
+  {icon:'💰',title:'Payroll Processing',desc:'Indian payroll compliance with PF, ESI, PT and TDS. One-click monthly payroll run with auto-generated payslip PDFs.',feats:['One-Click Payroll','PF & ESI Deductions','LOP Calculation','Payslip PDF','Salary Breakdown','Net Pay in Words']},
+  {icon:'📢',title:'Announcements',desc:'Company-wide communication with priority levels. Urgent announcements appear as mandatory acknowledgement modals.',feats:['Create Announcements','Priority Levels','Target Audience','Urgent Modals','Announcement Archive','Department Filter']},
+  {icon:'🎉',title:'Celebrations',desc:'Auto-detected birthdays and work anniversaries from employee profiles, with beautiful celebration cards on the news feed.',feats:['Birthday Detection','Work Anniversaries','Celebration Cards','7-Day Preview','Auto-Posts','Custom Messages']},
+  {icon:'😤',title:'Grievance Management',desc:'Secure internal issue reporting with anonymous submission option, category tracking and status workflow for HR resolution.',feats:['Anonymous Option','Category Tagging','Priority Levels','Status Workflow','Admin Notes','CEO Visibility']},
+  {icon:'📈',title:'Reports & Analytics',desc:'Six exportable report types covering attendance, leaves, payroll, headcount and attrition — available as PDF, Excel and CSV.',feats:['Attendance Report','Leave Report','Payroll Report','Headcount Report','Attrition Trends','Export PDF/Excel']},
+  {icon:'🔄',title:'Shift Management',desc:'Define and assign custom shifts to employees. Support for General, Morning and Evening shifts with rotational scheduling.',feats:['Shift Definitions','Assign Shifts','Rotational Support','Shift Calendar','Bulk Assignment','Shift Notifications']},
+  {icon:'⚙️',title:'System Settings',desc:'CEO-exclusive control panel for working hours, late thresholds, overtime rates, leave quotas and holiday calendar management.',feats:['Working Hours Config','Late Threshold','Overtime Rate','Leave Quotas','Holiday Calendar','Password Reset']},
+  {icon:'🤖',title:'Wayne AI Assistant',desc:'Intelligent HR assistant powered by Mistral 7B running locally. Answers HR queries based on the logged-in user\'s role scope.',feats:['Role-Aware Answers','English & Tamil','Leave Balance Queries','Policy Documents RAG','Quick Actions','Chat History']},
+];
+
+const grid=document.getElementById('modulesGrid');
+modules.forEach((m,i)=>{
+  const d=document.createElement('div');
+  d.className='mod-card';
+  d.style.transitionDelay=(i%3*0.07)+'s';
+  d.innerHTML='<div class="mod-icon">'+m.icon+'</div><div class="mod-title">'+m.title+'</div><div class="mod-desc">'+m.desc+'</div><div class="mod-features">'+m.feats.map(f=>'<span class="mod-feat">'+f+'</span>').join('')+'</div>';
+  d.addEventListener('mousemove',e=>{
+    const r=d.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-0.5;
+    const y=(e.clientY-r.top)/r.height-0.5;
+    d.style.transform='translateY(-4px) rotateX('+(-y*8)+'deg) rotateY('+(x*8)+'deg)';
+  });
+  d.addEventListener('mouseleave',()=>{d.style.transform='';});
+  grid.appendChild(d);
+});
+
+// ROLES DATA
+const roles=[
+  {icon:'👑',name:'CEO / Founder',desc:'God-mode access across the entire platform with exclusive analytics dashboard and override capabilities.',perms:['View all employee data & salaries','Exclusive CEO analytics dashboard','Override any leave decision','All system settings control','Unrestricted Wayne AI access','Company-wide announcements']},
+  {icon:'🛡️',name:'Admin Officer',desc:'Full HR operations access including payroll processing, attendance correction and grievance management.',perms:['Manage all employee profiles','Process monthly payroll','Approve/reject all leaves','Correct attendance records','Handle grievance tickets','All reports & exports']},
+  {icon:'👔',name:'Team Leader',desc:'Team-scoped visibility with approval authority for their direct reports only.',perms:['View own team data only','Approve team leave requests','Team attendance summary','Own payslip & leave balance','Clock in / Clock out','Raise grievances']},
+  {icon:'👤',name:'Employee',desc:'Personal self-service portal for daily HR tasks — attendance, leaves, payslips and announcements.',perms:['View own data only','Clock in / Clock out','Apply for leaves','Download own payslips','Read announcements','Raise grievances']},
+];
+const rolesGrid=document.getElementById('rolesGrid');
+roles.forEach((r,i)=>{
+  const d=document.createElement('div');
+  d.className='role-card';
+  d.style.transitionDelay=(i*0.1)+'s';
+  d.innerHTML='<div class="role-icon">'+r.icon+'</div><div class="role-name">'+r.name+'</div><div class="role-desc">'+r.desc+'</div><div class="role-perms">'+r.perms.map(p=>'<div class="role-perm"><div class="perm-check">✓</div>'+p+'</div>').join('')+'</div>';
+  rolesGrid.appendChild(d);
+});
+
+// SCROLL REVEAL
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.mod-card,.role-card').forEach(el=>observer.observe(el));
+
+// SMOOTH SCROLL
+function scrollTo(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'});}
+
+// RIPPLE ON HERO BTN
+document.getElementById('heroBtn').addEventListener('click',function(e){
+  const r=document.createElement('span');r.classList.add('hero-ripple');
+  const rc=this.getBoundingClientRect(),s=Math.max(rc.width,rc.height);
+  r.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-rc.left-s/2)+'px;top:'+(e.clientY-rc.top-s/2)+'px;position:absolute;';
+  this.appendChild(r);setTimeout(()=>r.remove(),700);
+});
+
+// LAUNCH
+function launch(){
+  const pt=document.getElementById('pt');
+  const fill=document.getElementById('ptFill');
+  const dots=document.getElementById('ptDots');
+  dots.innerHTML='';
+  for(let i=0;i<24;i++){
+    const d=document.createElement('div');d.className='pt-dot';
+    const sz=Math.random()*4+2;
+    d.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;bottom:0;opacity:'+(Math.random()*0.6+0.2)+';animation-duration:'+(Math.random()*2+1.5)+'s;animation-delay:'+(Math.random()*0.8)+'s;box-shadow:0 0 '+(sz*4)+'px rgba(196,30,30,0.8);';
+    dots.appendChild(d);
+  }
+  pt.classList.add('show');
+  fill.style.width='0%';
+  setTimeout(()=>fill.style.width='100%',100);
+  setTimeout(()=>window.location.href='index.html',1800);
+}
+
+// NAV SCROLL HIDE
+let lastY=0;
+const nav=document.querySelector('.nav');
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  if(y>lastY&&y>100)nav.style.transform='translateX(-50%) translateY(-80px)';
+  else nav.style.transform='translateX(-50%) translateY(0)';
+  lastY=y;
+},{passive:true});
+nav.style.transition='transform 0.4s cubic-bezier(0.16,1,0.3,1)';
+</script>
+</body>
+</html>
