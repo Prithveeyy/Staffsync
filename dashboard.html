@@ -36,8 +36,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
   background:rgba(6,1,1,0.95);backdrop-filter:blur(24px);
   border-right:1px solid var(--border);z-index:200;
   display:flex;flex-direction:column;
-  transition:width 0.3s cubic-bezier(0.4,0,0.2,1),transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  overflow:hidden;flex-shrink:0;
+  transition:width 0.42s cubic-bezier(0.16,1,0.3,1),transform 0.42s cubic-bezier(0.16,1,0.3,1);
+  overflow:hidden;flex-shrink:0;will-change:width;
 }
 .sidebar.collapsed{width:var(--swc);}
 .sb-head{
@@ -52,16 +52,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .sb-brand{
   font-family:'Playfair Display',serif;font-style:italic;font-size:19px;
   color:var(--red);white-space:nowrap;overflow:hidden;flex:1;
-  transition:opacity 0.2s,width 0.3s;
+  transition:opacity 0.3s cubic-bezier(0.16,1,0.3,1),max-width 0.42s cubic-bezier(0.16,1,0.3,1);
+  max-width:160px;
 }
-.sidebar.collapsed .sb-brand{opacity:0;width:0;}
+.sidebar.collapsed .sb-brand{opacity:0;max-width:0;}
+.sidebar.collapsed .sb-logo{opacity:0;width:0;padding:0;margin:0;}
+.sidebar.collapsed .sb-head{gap:0;justify-content:center;}
 .sb-toggle{
-  background:none;border:none;color:var(--text2);cursor:pointer;
+  background:none;border:1px solid var(--border);color:var(--text2);cursor:pointer;
   padding:6px;border-radius:7px;display:flex;align-items:center;flex-shrink:0;
   transition:all 0.2s;
 }
-.sb-toggle:hover{background:var(--surface2);color:var(--text);}
-.sb-toggle svg{width:16px;height:16px;stroke-width:2;}
+.sb-toggle:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+.sb-toggle svg{
+  width:16px;height:16px;stroke-width:2;
+  transition:transform 0.42s cubic-bezier(0.16,1,0.3,1);
+}
+.sidebar.collapsed .sb-toggle svg{transform:rotate(180deg);}
 
 .nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px;}
 .nav::-webkit-scrollbar{width:3px;}
@@ -151,7 +158,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .main{
   flex:1;margin-left:var(--sw);height:100vh;overflow-y:auto;overflow-x:hidden;
   position:relative;z-index:1;
-  transition:margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition:margin-left 0.42s cubic-bezier(0.16,1,0.3,1);
+  will-change:margin-left;
 }
 .main.sb-collapsed{margin-left:var(--swc);}
 .main::-webkit-scrollbar{width:4px;}
@@ -455,6 +463,21 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
 .set-sec{margin-bottom:24px;}
 .set-sec-t{font-size:13px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-top:0;border-bottom:1px solid var(--border);}
 
+/* NOTIFICATION POPUP */
+.notif-popup{
+  position:fixed;top:72px;right:20px;z-index:9998;
+  background:rgba(10,2,2,0.97);border:1px solid rgba(255,255,255,0.12);
+  border-left:3px solid var(--red);border-radius:12px;
+  padding:12px 16px;max-width:320px;min-width:240px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  animation:npIn 0.35s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes npIn{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+.notif-popup.ok{border-left-color:var(--green);}
+.notif-popup.info{border-left-color:var(--blue);}
+.np-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;}
+.np-body{font-size:11px;color:rgba(255,255,255,0.55);}
+
 /* TOAST */
 #toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);
@@ -502,11 +525,106 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
   .stats-grid{grid-template-columns:1fr;}
   .emp-grid{grid-template-columns:1fr;}
 }
+
+/* ── ROLE ACCENT THEMING ─────────────────────────────────────── */
+/* Applied to <body> via JS on load */
+body.role-CEO           { --accent:#C41E1E; --accent-dim:rgba(196,30,30,0.12); --accent-glow:rgba(196,30,30,0.4); }
+body.role-ADMIN_OFFICER { --accent:#6366f1; --accent-dim:rgba(99,102,241,0.12); --accent-glow:rgba(99,102,241,0.35); }
+body.role-TEAM_LEADER   { --accent:#f59e0b; --accent-dim:rgba(245,158,11,0.12); --accent-glow:rgba(245,158,11,0.35); }
+body.role-EMPLOYEE      { --accent:#22c55e; --accent-dim:rgba(34,197,94,0.12); --accent-glow:rgba(34,197,94,0.35); }
+
+/* ── ACCESS DENIED SCREEN ───────────────────────────────────── */
+#access-denied{
+  position:fixed;inset:0;z-index:9000;
+  background:rgba(8,2,2,0.97);backdrop-filter:blur(24px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px;
+}
+#access-denied.show{display:flex;animation:fadeUp 0.3s ease;}
+.ad-icon{font-size:64px;margin-bottom:16px;filter:drop-shadow(0 0 32px rgba(196,30,30,0.6));}
+.ad-title{font-size:28px;font-weight:800;color:#fff;margin-bottom:8px;}
+.ad-sub{font-size:14px;color:var(--text2);max-width:400px;line-height:1.6;margin-bottom:24px;}
+.ad-perm{font-size:11px;font-family:monospace;background:rgba(196,30,30,0.1);border:1px solid rgba(196,30,30,0.25);color:#ff8080;padding:6px 14px;border-radius:6px;margin-bottom:24px;}
+.ad-back{padding:12px 28px;background:var(--red);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.ad-back:hover{transform:translateY(-2px);box-shadow:0 0 24px rgba(196,30,30,0.5);}
+
+/* ── CEO PREMIUM DASHBOARD ──────────────────────────────────── */
+.ceo-banner{
+  background:linear-gradient(135deg,rgba(196,30,30,0.2) 0%,rgba(120,10,10,0.1) 50%,rgba(196,30,30,0.08) 100%);
+  border:1px solid rgba(196,30,30,0.25);border-radius:18px;
+  padding:24px 28px;margin-bottom:16px;position:relative;overflow:hidden;
+}
+.ceo-banner::before{
+  content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;
+  border-radius:50%;background:radial-gradient(circle,rgba(196,30,30,0.15) 0%,transparent 70%);
+}
+.ceo-banner-title{font-size:22px;font-weight:800;letter-spacing:-0.03em;margin-bottom:4px;}
+.ceo-banner-sub{font-size:13px;color:var(--text2);}
+.ceo-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
+.ceo-kpi{padding:18px;text-align:center;transition:transform 0.18s;}
+.ceo-kpi:hover{transform:translateY(-3px);}
+.ceo-kpi-val{font-size:28px;font-weight:800;letter-spacing:-0.03em;line-height:1;}
+.ceo-kpi-lbl{font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);margin-top:6px;}
+.ceo-kpi-sub{font-size:10px;color:var(--text2);margin-top:2px;}
+
+/* ── FINANCIAL SUMMARY CARD ─────────────────────────────────── */
+.fin-card{padding:20px;position:relative;overflow:hidden;}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.fin-row:last-child{border-bottom:none;}
+.fin-lbl{font-size:12px;color:var(--text2);}
+.fin-val{font-size:14px;font-weight:700;}
+
+/* ── LIVE ACTIVITY FEED ─────────────────────────────────────── */
+.af-item{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--border);}
+.af-item:last-child{border-bottom:none;}
+.af-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.af-content{flex:1;min-width:0;}
+.af-text{font-size:12px;line-height:1.4;}
+.af-time{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* ── TEAM LEAD DASHBOARD ────────────────────────────────────── */
+.tl-team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;}
+.tl-member-card{padding:14px;text-align:center;transition:transform 0.18s;}
+.tl-member-card:hover{transform:translateY(-2px);}
+.tl-m-av{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;margin:0 auto 8px;}
+.tl-m-name{font-size:12px;font-weight:600;margin-bottom:3px;}
+.tl-m-status{font-size:10px;}
+
+/* ── EMPLOYEE DASHBOARD QUICK ACTIONS ───────────────────────── */
+.qa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+.qa-btn{
+  padding:16px 12px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;text-align:center;
+  transition:all 0.2s cubic-bezier(0.34,1.2,0.64,1);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.qa-btn:hover{background:var(--surface2);border-color:var(--border2);transform:translateY(-2px);}
+.qa-icon{font-size:24px;}
+.qa-lbl{font-size:11px;font-weight:600;color:var(--text2);}
+
+/* ── ROLE BADGE STYLES ──────────────────────────────────────── */
+.role-badge-CEO          { background:rgba(196,30,30,0.2); color:#ff8080; border:1px solid rgba(196,30,30,0.4); }
+.role-badge-ADMIN_OFFICER{ background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.4); }
+.role-badge-TEAM_LEADER  { background:rgba(245,158,11,0.2); color:#fcd34d; border:1px solid rgba(245,158,11,0.4); }
+.role-badge-EMPLOYEE     { background:rgba(34,197,94,0.2); color:#86efac; border:1px solid rgba(34,197,94,0.4); }
+
+/* ── PERMISSION DENIED INLINE ───────────────────────────────── */
+.perm-denied{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 24px;text-align:center;min-height:240px;
+}
+.perm-denied-ico{font-size:48px;margin-bottom:12px;opacity:0.5;}
+.perm-denied-t{font-size:15px;font-weight:700;margin-bottom:6px;}
+.perm-denied-sub{font-size:12px;color:var(--text3);max-width:320px;}
+
+@media(max-width:1024px){.ceo-kpi-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:768px){.ceo-kpi-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
 <div class="bg-fixed"></div>
 <div id="toast"></div>
+<div id="notif-popups" style="position:fixed;top:72px;right:20px;z-index:9998;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:320px"></div>
 <div class="mob-overlay" id="mob-overlay" onclick="closeMobileSidebar()"></div>
 
 <!-- ═══ SIDEBAR ═══ -->
@@ -514,8 +632,8 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
   <div class="sb-head">
     <img src="treffer_logo.png" alt="Treffer Logo" class="sb-logo" onclick="navigate('dashboard')">
     <span class="sb-brand">StaffSync</span>
-    <button class="sb-toggle" onclick="toggleSidebar()">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    <button class="sb-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
   </div>
   <div class="nav" id="nav-menu"></div>
@@ -535,9 +653,6 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
 
   <!-- HEADER -->
   <header class="hdr">
-    <button class="hdr-mob-menu icon-btn" onclick="openMobileSidebar()">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-    </button>
     <div style="flex:1;min-width:0">
       <span class="hdr-title" id="pg-title">Dashboard</span>
       <span class="hdr-sub" id="pg-sub"></span>
@@ -546,7 +661,8 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
       <span class="role-pill" id="role-pill">—</span>
       <div class="icon-btn" onclick="toggleNotif()" title="Notifications">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <div class="ndot" id="ndot"></div>
+        <div class="ndot" id="ndot" style="display:none"></div>
+        <span id="ndot-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:99px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;display:none"></span>
       </div>
       <div class="icon-btn" onclick="doLogout()" title="Logout">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -566,107 +682,176 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
   </div>
 
   <!-- ═══════════════════════════════ -->
-  <!-- DASHBOARD PAGE -->
+  <!-- ACCESS DENIED OVERLAY -->
+  <!-- ═══════════════════════════════ -->
+  <div id="access-denied">
+    <div class="ad-icon">🔒</div>
+    <div class="ad-title">Access Denied</div>
+    <div class="ad-sub">You don't have permission to access this area. If you believe this is an error, contact your Administrator.</div>
+    <div class="ad-perm" id="ad-perm-code"></div>
+    <button class="ad-back" onclick="hideAccessDenied()">← Go Back</button>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- DASHBOARD PAGE (role-dispatched) -->
   <!-- ═══════════════════════════════ -->
   <div class="page active" id="page-dashboard">
-    <!-- Clock -->
-    <div class="glass clock-card" style="margin-bottom:16px">
-      <div class="clock-inner">
-        <div class="clock-time-wrap">
-          <div class="clock-time" id="live-time">--:--:--</div>
-          <div class="clock-date" id="live-date">Loading...</div>
-        </div>
-        <div class="clock-status-box">
-          <div class="csb-lbl">Today's Status</div>
-          <div class="csb-val" id="csb-val">Not clocked in</div>
-          <div class="csb-timer" id="csb-timer"> </div>
-        </div>
-        <button class="clock-btn in" id="clock-btn" onclick="doClock()">Clock In</button>
-      </div>
-    </div>
 
-    <!-- Stats -->
-    <div class="stats-grid" id="stats-grid">
-      <div class="glass stat-card">
-        <div class="stat-ico" style="background:rgba(34,197,94,0.12)">
-          <svg fill="none" stroke="#86efac" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <!-- ─── CEO DASHBOARD ─────────────────────── -->
+    <div id="dash-ceo" style="display:none">
+      <!-- CEO Welcome Banner -->
+      <div class="ceo-banner glass" style="margin-bottom:16px">
+        <div style="position:relative;z-index:1">
+          <div class="ceo-banner-title" id="ceo-greeting">Good morning</div>
+          <div class="ceo-banner-sub">Here's your company overview for today.</div>
         </div>
-        <div class="stat-val" id="s-emp">--</div>
-        <div class="stat-lbl">Employees</div>
-        <div class="stat-sub" id="s-emp-sub"></div>
       </div>
-      <div class="glass stat-card">
-        <div class="stat-ico" style="background:rgba(99,102,241,0.12)">
-          <svg fill="none" stroke="#a5b4fc" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <!-- KPI Row -->
+      <div class="ceo-kpi-grid" id="ceo-kpi-grid">
+        <div class="glass ceo-kpi"><div class="ceo-kpi-val" id="ceo-total-emp">—</div><div class="ceo-kpi-lbl">Total Employees</div><div class="ceo-kpi-sub" id="ceo-emp-sub"></div></div>
+        <div class="glass ceo-kpi"><div class="ceo-kpi-val" id="ceo-present">—</div><div class="ceo-kpi-lbl">Present Today</div><div class="ceo-kpi-sub" id="ceo-present-sub"></div></div>
+        <div class="glass ceo-kpi"><div class="ceo-kpi-val" id="ceo-payroll">—</div><div class="ceo-kpi-lbl">Monthly Payroll</div><div class="ceo-kpi-sub" id="ceo-payroll-sub"></div></div>
+        <div class="glass ceo-kpi"><div class="ceo-kpi-val" id="ceo-pending-leaves">—</div><div class="ceo-kpi-lbl">Pending Leaves</div><div class="ceo-kpi-sub">awaiting approval</div></div>
+        <div class="glass ceo-kpi"><div class="ceo-kpi-val" id="ceo-open-griev">—</div><div class="ceo-kpi-lbl">Open Grievances</div><div class="ceo-kpi-sub" id="ceo-griev-sub"></div></div>
+      </div>
+      <!-- Charts + Activity row -->
+      <div class="g2" style="margin-bottom:14px">
+        <!-- Dept breakdown chart -->
+        <div class="glass" style="padding:16px">
+          <div class="sec-hdr"><span class="sec-t">Department Headcount</span><button class="sec-lnk" onclick="navigate('reports')">Full Report →</button></div>
+          <div style="position:relative;height:200px"><canvas id="ceo-dept-chart"></canvas></div>
         </div>
-        <div class="stat-val" id="s-att">--</div>
-        <div class="stat-lbl">Present Today</div>
-        <div class="stat-sub" id="s-att-sub"></div>
-      </div>
-      <div class="glass stat-card">
-        <div class="stat-ico" style="background:rgba(245,158,11,0.12)">
-          <svg fill="none" stroke="#fcd34d" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <!-- Financial Summary -->
+        <div class="glass fin-card">
+          <div class="sec-hdr"><span class="sec-t">💰 Financial Summary</span><span class="sec-t" style="font-size:11px;color:var(--text3)" id="ceo-fin-period"></span></div>
+          <div id="ceo-fin-rows"></div>
         </div>
-        <div class="stat-val" id="s-lv">--</div>
-        <div class="stat-lbl">Pending Leaves</div>
-        <div class="stat-sub" id="s-lv-sub"></div>
       </div>
-      <div class="glass stat-card">
-        <div class="stat-ico" style="background:rgba(196,30,30,0.12)">
-          <svg fill="none" stroke="#ff8080" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
-        <div class="stat-val" id="s-griev">--</div>
-        <div class="stat-lbl">Open Grievances</div>
-        <div class="stat-sub"></div>
-      </div>
-    </div>
-
-    <!-- Leave Balance -->
-    <div class="glass" style="padding:16px;margin-bottom:16px">
-      <div class="sec-hdr">
-        <span class="sec-t">My Leave Balance</span>
-        <button class="sec-lnk" onclick="navigate('leaves')">Apply Leave →</button>
-      </div>
-      <div class="lb-grid" id="lb-grid">
-        <div class="glass lb-card"><div class="lb-type">Casual</div><div class="lb-num">--</div><div class="lb-tot">of 12</div><div class="lb-bar"><div class="lb-fill" style="background:#6366f1;width:0"></div></div></div>
-        <div class="glass lb-card"><div class="lb-type">Sick</div><div class="lb-num">--</div><div class="lb-tot">of 6</div><div class="lb-bar"><div class="lb-fill" style="background:#22c55e;width:0"></div></div></div>
-        <div class="glass lb-card"><div class="lb-type">Earned</div><div class="lb-num">--</div><div class="lb-tot">of 15</div><div class="lb-bar"><div class="lb-fill" style="background:#f59e0b;width:0"></div></div></div>
-      </div>
-    </div>
-
-    <!-- Bottom Grid -->
-    <div class="g2">
-      <div class="glass">
-        <div style="padding:14px 16px 0">
-          <div class="sec-hdr">
-            <span class="sec-t">📢 Announcements</span>
-            <button class="sec-lnk" onclick="navigate('announcements')">View all →</button>
-          </div>
-        </div>
-        <div id="dash-ann"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
+      <!-- Audit Feed + Announcements -->
+      <div class="g2" style="margin-bottom:14px">
         <div class="glass">
-          <div style="padding:14px 16px 0">
-            <div class="sec-hdr">
-              <span class="sec-t">🎉 Upcoming Celebrations</span>
-              <button class="sec-lnk" onclick="navigate('celebrations')">View all →</button>
-            </div>
-          </div>
-          <div id="dash-celeb"></div>
+          <div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">🔍 Recent Activity</span><button class="sec-lnk" onclick="navigate('audit')">Audit Log →</button></div></div>
+          <div id="ceo-activity-feed"></div>
         </div>
-        <div class="glass" id="wn-card">
-          <div style="padding:14px 16px 0">
-            <div class="sec-hdr">
-              <span class="sec-t">🟢 Working Now</span>
-              <span class="sec-t" id="wn-count" style="font-size:12px;color:var(--green)"></span>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="glass">
+            <div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">📢 Announcements</span></div></div>
+            <div id="ceo-ann"></div>
           </div>
-          <div id="wn-list"></div>
+          <div class="glass">
+            <div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">🎉 Celebrations</span></div></div>
+            <div id="ceo-celeb"></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- ─── ADMIN DASHBOARD ────────────────────── -->
+    <div id="dash-admin" style="display:none">
+      <!-- Clock -->
+      <div class="glass clock-card" style="margin-bottom:16px">
+        <div class="clock-inner">
+          <div class="clock-time-wrap">
+            <div class="clock-time" id="live-time">--:--:--</div>
+            <div class="clock-date" id="live-date">Loading...</div>
+          </div>
+          <div class="clock-status-box">
+            <div class="csb-lbl">Today's Status</div>
+            <div class="csb-val" id="csb-val">Not clocked in</div>
+            <div class="csb-timer" id="csb-timer"> </div>
+          </div>
+          <button class="clock-btn in" id="clock-btn" onclick="doClock()">Clock In</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="glass stat-card"><div class="stat-ico" style="background:rgba(34,197,94,0.12)"><svg fill="none" stroke="#86efac" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="s-emp">--</div><div class="stat-lbl">Total Employees</div><div class="stat-sub" id="s-emp-sub"></div></div>
+        <div class="glass stat-card"><div class="stat-ico" style="background:rgba(99,102,241,0.12)"><svg fill="none" stroke="#a5b4fc" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="stat-val" id="s-att">--</div><div class="stat-lbl">Present Today</div><div class="stat-sub" id="s-att-sub"></div></div>
+        <div class="glass stat-card"><div class="stat-ico" style="background:rgba(245,158,11,0.12)"><svg fill="none" stroke="#fcd34d" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-val" id="s-lv">--</div><div class="stat-lbl">Pending Leaves</div><div class="stat-sub" id="s-lv-sub"></div></div>
+        <div class="glass stat-card"><div class="stat-ico" style="background:rgba(196,30,30,0.12)"><svg fill="none" stroke="#ff8080" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="stat-val" id="s-griev">--</div><div class="stat-lbl">Open Grievances</div><div class="stat-sub"></div></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="glass" style="padding:16px"><div class="sec-hdr"><span class="sec-t">My Leave Balance</span><button class="sec-lnk" onclick="navigate('leaves')">Apply Leave →</button></div><div class="lb-grid" id="lb-grid"></div></div>
+        <div class="glass" id="wn-card"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">🟢 Working Now</span><span class="sec-t" id="wn-count" style="font-size:12px;color:var(--green)"></span></div></div><div id="wn-list"></div></div>
+      </div>
+      <div class="g2">
+        <div class="glass"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">📢 Announcements</span><button class="sec-lnk" onclick="navigate('announcements')">View all →</button></div></div><div id="dash-ann"></div></div>
+        <div class="glass"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">🎉 Upcoming Celebrations</span></div></div><div id="dash-celeb"></div></div>
+      </div>
+    </div>
+
+    <!-- ─── TEAM LEADER DASHBOARD ─────────────── -->
+    <div id="dash-tl" style="display:none">
+      <!-- Clock -->
+      <div class="glass clock-card" style="margin-bottom:16px">
+        <div class="clock-inner">
+          <div class="clock-time-wrap">
+            <div class="clock-time" id="tl-live-time">--:--:--</div>
+            <div class="clock-date" id="tl-live-date">Loading...</div>
+          </div>
+          <div class="clock-status-box">
+            <div class="csb-lbl">Today's Status</div>
+            <div class="csb-val" id="tl-csb-val">Not clocked in</div>
+            <div class="csb-timer" id="tl-csb-timer"> </div>
+          </div>
+          <button class="clock-btn in" id="tl-clock-btn" onclick="doClock()">Clock In</button>
+        </div>
+      </div>
+      <!-- TL Stats -->
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="glass stat-card"><div class="stat-val" id="tl-team-size" style="color:var(--yellow)">—</div><div class="stat-lbl">Team Members</div><div class="stat-sub" id="tl-team-sub"></div></div>
+        <div class="glass stat-card"><div class="stat-val" id="tl-present-today" style="color:var(--green)">—</div><div class="stat-lbl">Present Today</div><div class="stat-sub">of team</div></div>
+        <div class="glass stat-card"><div class="stat-val" id="tl-pending-leaves" style="color:#fcd34d">—</div><div class="stat-lbl">Pending Approvals</div><div class="stat-sub">leave requests</div></div>
+        <div class="glass stat-card"><div class="stat-val" id="tl-leave-bal" style="color:var(--blue)">—</div><div class="stat-lbl">My Leave Balance</div><div class="stat-sub" id="tl-leave-bal-sub">days available</div></div>
+      </div>
+      <!-- Team Members -->
+      <div class="glass" style="padding:16px;margin-bottom:14px">
+        <div class="sec-hdr"><span class="sec-t">👥 My Team</span><button class="sec-lnk" onclick="navigate('employees')">Full Directory →</button></div>
+        <div class="tl-team-grid" id="tl-team-grid"></div>
+      </div>
+      <!-- Pending Approvals + Announcements -->
+      <div class="g2">
+        <div class="glass" style="padding:16px"><div class="sec-hdr"><span class="sec-t">📋 Pending Leave Requests</span><button class="sec-lnk" onclick="navigate('leaves')">Manage →</button></div><div id="tl-pending-lv"></div></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="glass"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">📢 Announcements</span></div></div><div id="tl-ann"></div></div>
+          <div class="glass"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">🎉 Celebrations</span></div></div><div id="tl-celeb"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── EMPLOYEE DASHBOARD ────────────────── -->
+    <div id="dash-emp" style="display:none">
+      <!-- Clock -->
+      <div class="glass clock-card" style="margin-bottom:16px">
+        <div class="clock-inner">
+          <div class="clock-time-wrap">
+            <div class="clock-time" id="emp-live-time">--:--:--</div>
+            <div class="clock-date" id="emp-live-date">Loading...</div>
+          </div>
+          <div class="clock-status-box">
+            <div class="csb-lbl">Today's Status</div>
+            <div class="csb-val" id="emp-csb-val">Not clocked in</div>
+            <div class="csb-timer" id="emp-csb-timer"> </div>
+          </div>
+          <button class="clock-btn in" id="emp-clock-btn" onclick="doClock()">Clock In</button>
+        </div>
+      </div>
+      <!-- Quick Actions -->
+      <div class="qa-grid" style="margin-bottom:4px">
+        <div class="qa-btn" onclick="navigate('leaves');openApplyLeave()"><div class="qa-icon">🌿</div><div class="qa-lbl">Apply Leave</div></div>
+        <div class="qa-btn" onclick="navigate('attendance')"><div class="qa-icon">📅</div><div class="qa-lbl">My Attendance</div></div>
+        <div class="qa-btn" onclick="navigate('payslips')"><div class="qa-icon">💰</div><div class="qa-lbl">My Payslip</div></div>
+        <div class="qa-btn" onclick="navigate('grievances');openGrievModal()"><div class="qa-icon">📣</div><div class="qa-lbl">Raise Grievance</div></div>
+      </div>
+      <!-- Leave Balance + Announcements -->
+      <div class="g2" style="margin-bottom:14px">
+        <div class="glass" style="padding:16px"><div class="sec-hdr"><span class="sec-t">My Leave Balance</span><button class="sec-lnk" onclick="navigate('leaves')">Apply Leave →</button></div><div class="lb-grid" id="emp-lb-grid"></div></div>
+        <div class="glass"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">📢 Announcements</span><button class="sec-lnk" onclick="navigate('announcements')">View all →</button></div></div><div id="emp-ann"></div></div>
+      </div>
+      <!-- Celebrations -->
+      <div class="glass"><div style="padding:14px 16px 0"><div class="sec-hdr"><span class="sec-t">🎉 Upcoming Celebrations</span></div></div><div id="emp-celeb"></div></div>
+    </div>
+
+  </div><!-- end page-dashboard -->
 
   <!-- ═══════════════════════════════ -->
   <!-- ATTENDANCE PAGE -->
@@ -795,10 +980,16 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
           <input class="fi" type="number" id="pr-year" value="2025" style="width:90px;padding:8px 10px"/>
         </div>
         <button class="btn btn-primary" onclick="runPayroll()">Process Payroll</button>
+        <button class="btn btn-secondary" onclick="exportPayrollCSV()" style="margin-left:4px">⬇ Export CSV</button>
       </div>
     </div>
     <div class="glass" style="padding:16px">
-      <div class="sec-t" style="margin-bottom:14px">Payslips</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <span class="sec-t">Payslips</span>
+        <div style="display:flex;gap:8px" id="ps-export-btns" style="display:none">
+          <button class="btn btn-secondary btn-sm" onclick="exportAllPayslipsCSV()">⬇ All Payslips CSV</button>
+        </div>
+      </div>
       <div id="ps-list"></div>
     </div>
   </div>
@@ -857,7 +1048,9 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
           <div style="margin-top:6px" id="prof-dept-badge"></div>
         </div>
         <div id="prof-fields"></div>
-        <div style="margin-top:16px"><button class="btn btn-primary" onclick="openModal('modal-password')">Change Password</button></div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <button class="btn btn-primary" style="width:100%" onclick="openModal('modal-password')">🔐 Change Password</button>
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="glass" style="padding:20px">
@@ -876,11 +1069,14 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
   <!-- REPORTS PAGE -->
   <!-- ═══════════════════════════════ -->
   <div class="page" id="page-reports">
-    <div class="filter-bar">
-      <button class="fb active" onclick="showReport('attendance',this)">Attendance</button>
-      <button class="fb" onclick="showReport('leaves',this)">Leaves</button>
-      <button class="fb" onclick="showReport('payroll',this)">Payroll</button>
-      <button class="fb" onclick="showReport('headcount',this)">Headcount</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      <div class="filter-bar" style="margin-bottom:0">
+        <button class="fb active" onclick="showReport('attendance',this)">Attendance</button>
+        <button class="fb" onclick="showReport('leaves',this)">Leaves</button>
+        <button class="fb" onclick="showReport('payroll',this)">Payroll</button>
+        <button class="fb" onclick="showReport('headcount',this)">Headcount</button>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="report-export-btn" style="display:none" onclick="exportCurrentReport()">⬇ Download CSV</button>
     </div>
     <div class="glass" id="report-box" style="padding:20px;min-height:300px">
       <div class="empty"><div class="empty-ico">📊</div><div class="empty-txt">Select a report above</div></div>
@@ -908,9 +1104,9 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
         <div class="glass" style="padding:20px">
           <div class="set-sec-t">🔐 Reset Employee Password</div>
           <div class="fg"><label>Employee</label><select class="fi" id="pwd-emp"><option value="">Select...</option></select></div>
-          <div class="fg"><label>New Password</label><input class="fi" type="text" id="pwd-new" placeholder="Min 8 chars, 1 upper, 1 number, 1 special"/></div>
+          <div class="fg"><label>New Password</label><input class="fi" type="text" id="admin-pwd-val" placeholder="Min 8 chars, 1 upper, 1 number, 1 special"/></div>
           <div class="fhint" style="margin-bottom:10px">⚠️ Only Admin & CEO can reset passwords. Action is logged.</div>
-          <button class="btn btn-danger" onclick="doResetPwd()">Reset Password</button>
+          <button class="btn btn-danger" onclick="adminResetPwd()">Reset Password</button>
         </div>
       </div>
     </div>
@@ -941,6 +1137,64 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
       <button class="btn btn-primary" onclick="saveShiftSettings()">Save</button>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- HOLIDAYS PAGE -->
+  <!-- ═══════════════════════════════ -->
+  <div class="page" id="page-holidays">
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <select class="fi" id="hol-year-sel" style="max-width:110px;padding:8px 10px;font-size:12px" onchange="loadHolidays()">
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+        <option value="2027">2027</option>
+      </select>
+      <button class="btn btn-primary" id="add-hol-btn" style="display:none;margin-left:auto" onclick="openHolidayModal()">+ Add Holiday</button>
+    </div>
+    <div class="g2" style="align-items:start">
+      <!-- Holiday list -->
+      <div class="glass" style="padding:16px">
+        <div class="sec-t" style="margin-bottom:14px">📅 Holiday List</div>
+        <div id="hol-list"><div class="empty"><div class="empty-ico">🗓️</div><div class="empty-txt">Loading holidays...</div></div></div>
+      </div>
+      <!-- Holiday mini-calendar per month -->
+      <div class="glass" style="padding:16px">
+        <div class="sec-t" style="margin-bottom:14px">📊 Holidays by Month</div>
+        <div id="hol-month-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- AUDIT LOG PAGE -->
+  <!-- ═══════════════════════════════ -->
+  <div class="page" id="page-audit">
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <select class="fi" id="audit-action-filter" style="max-width:200px;padding:8px 10px;font-size:12px" onchange="loadAuditLog()">
+        <option value="">All Actions</option>
+        <option value="CLOCK_IN">Clock In</option>
+        <option value="CLOCK_OUT">Clock Out</option>
+        <option value="LEAVE_APPLY">Leave Applied</option>
+        <option value="LEAVE_APPROVE">Leave Approved</option>
+        <option value="LEAVE_REJECT">Leave Rejected</option>
+        <option value="PASSWORD_RESET">Password Reset</option>
+        <option value="SETTINGS_UPDATE">Settings Updated</option>
+        <option value="LOGOUT">Logout</option>
+      </select>
+      <span id="audit-count" style="font-size:12px;color:var(--text2)"></span>
+    </div>
+    <div class="glass">
+      <div style="padding:14px 16px 0"><div class="sec-t">🔍 Audit Trail</div></div>
+      <div class="tbl-wrap" style="padding-top:10px">
+        <table>
+          <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
+          <tbody id="audit-tbody"></tbody>
+        </table>
+      </div>
+      <div id="audit-pagination" style="display:flex;justify-content:center;gap:6px;padding:14px"></div>
+    </div>
+  </div>
+
 
 </div><!-- end .main -->
 
@@ -1125,6 +1379,25 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
     <div class="btn-row"><button class="btn btn-secondary" onclick="closeModal('modal-shift')">Cancel</button><button class="btn btn-primary" onclick="saveShift()">Save</button></div>
   </div>
 </div>
+<!-- Add Holiday -->
+<div class="modal-ov" id="modal-holiday">
+  <div class="modal" style="max-width:400px">
+    <div class="mod-hdr"><span class="mod-t">Add Holiday</span><button class="mod-close" onclick="closeModal('modal-holiday')">✕</button></div>
+    <div class="fg"><label>Holiday Name</label><input class="fi" id="hol-name" placeholder="e.g. Diwali"/></div>
+    <div class="fg"><label>Date</label><input class="fi" type="date" id="hol-date"/></div>
+    <div class="fg"><label>Type</label>
+      <select class="fi" id="hol-type">
+        <option value="NATIONAL">National Holiday</option>
+        <option value="REGIONAL">Regional Holiday</option>
+        <option value="OPTIONAL">Optional Holiday</option>
+        <option value="COMPANY">Company Day Off</option>
+      </select>
+    </div>
+    <div class="fg"><label>Description (optional)</label><input class="fi" id="hol-desc" placeholder="Brief description..."/></div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="closeModal('modal-holiday')">Cancel</button><button class="btn btn-primary" onclick="saveHoliday()">Add Holiday</button></div>
+  </div>
+</div>
+
 <!-- WAYNE AI BUTTON -->
 <button id="wayne-btn" onclick="toggleWayne()">
   <div class="pulse"></div>
@@ -1156,9 +1429,16 @@ textarea.fi{resize:vertical;min-height:90px;line-height:1.5;}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="rbac.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 'use strict';
+
+// ══════════════════════════════════════
+// ANTHROPIC API KEY — replace with your key
+// ══════════════════════════════════════
+const ANTHROPIC_KEY = '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';
 
 // ══════════════════════════════════════
 // UTILITIES
@@ -1193,8 +1473,10 @@ function validateInput(value, type) {
 
 // Pagination utility
 function paginate(array, page, perPage) {
+  const total = array.length;
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
   const start = (page - 1) * perPage;
-  return array.slice(start, start + perPage);
+  return { items: array.slice(start, start + perPage), totalPages };
 }
 
 // ══════════════════════════════════════
@@ -1224,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   startLiveClock();
   await loadDashboard();
   loadNotifications();
+  initRealtimeNotifications();
   initSessionTimeout();
   // Close notif panel when clicking outside
   document.addEventListener('click', e => {
@@ -1257,11 +1540,12 @@ function buildNav() {
     {id:'leaves', label:'Leaves', ico:'leaf'},
     {id:'payslips', label:'Payslips', ico:'doc'},
     {id:'announcements', label:'Announcements', ico:'meg'},
+    {id:'holidays', label:'Holidays', ico:'holiday'},
     {id:'celebrations', label:'Celebrations', ico:'star'},
     {id:'grievances', label:'Grievances', ico:'warn'},
-    {id:'employees', label:'Employees', ico:'team'},
+    ...((isAdmin || USER.role==='TEAM_LEADER') ? [{id:'employees', label:'Employees', ico:'team'}] : []),
     ...(isAdmin ? [{id:'reports', label:'Reports', ico:'chart'},{id:'shifts', label:'Shifts', ico:'clock'}] : []),
-    ...(isAdmin ? [{id:'settings', label:'Settings', ico:'gear'}] : []),
+    ...(isAdmin ? [{id:'audit', label:'Audit Log', ico:'shield'},{id:'settings', label:'Settings', ico:'gear'}] : []),
   ];
 
   const svgs = {
@@ -1276,12 +1560,14 @@ function buildNav() {
     chart:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
     clock:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
     gear:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-    logout:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`
+    logout:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+    holiday:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    shield:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`
   };
 
   let html = '<div class="nav-sec">Navigation</div>';
   items.forEach(item => {
-    html += `<a class="ni${item.id==='dashboard'?' active':''}" id="nav-${item.id}" onclick="navigate('${item.id}')">
+    html += `<a class="ni${item.id==='dashboard'?' active':''}" id="nav-${item.id}" onclick="navigate('${item.id}')" title="${item.label}">
       <span class="ni-ico">${svgs[item.ico]||''}</span>
       <span class="ni-lbl">${item.label}</span>
       ${item.id==='leaves'?'<span class="ni-badge" id="lv-badge" style="display:none">0</span>':''}
@@ -1305,12 +1591,12 @@ function navigate(page) {
   const ne = document.getElementById('nav-'+page);
   if (pe) pe.classList.add('active');
   if (ne) ne.classList.add('active');
-  const titles = {dashboard:'Dashboard',attendance:'Attendance',leaves:'Leave Management',payslips:'Payslips',announcements:'Announcements',celebrations:'Celebrations',grievances:'Grievances',employees:'Employees',reports:'Reports & Analytics',shifts:'Shift Management',settings:'Settings',profile:'My Profile'};
+  const titles = {dashboard:'Dashboard',attendance:'Attendance',leaves:'Leave Management',payslips:'Payslips',announcements:'Announcements',holidays:'Holiday Calendar',celebrations:'Celebrations',grievances:'Grievances',employees:'Employees',reports:'Reports & Analytics',shifts:'Shift Management',audit:'Audit Log',settings:'Settings',profile:'My Profile'};
   document.getElementById('pg-title').textContent = titles[page]||page;
   document.getElementById('pg-sub').textContent = '';
   document.getElementById('notif-panel').classList.remove('open');
   closeMobileSidebar();
-  const loaders = {attendance:loadAttendance,leaves:loadLeaves,payslips:loadPayslips,announcements:loadAnnouncements,celebrations:loadCelebrations,grievances:loadGrievances,employees:loadEmployees,reports:()=>showReport('attendance',document.querySelector('#page-reports .fb')),settings:loadSettings,shifts:loadShifts,profile:loadProfile};
+  const loaders = {attendance:loadAttendance,leaves:loadLeaves,payslips:loadPayslips,announcements:loadAnnouncements,holidays:loadHolidays,celebrations:loadCelebrations,grievances:loadGrievances,employees:loadEmployees,reports:()=>showReport('attendance',document.querySelector('#page-reports .fb')),settings:loadSettings,shifts:loadShifts,audit:loadAuditLog,profile:loadProfile};
   if (loaders[page]) loaders[page]();
 }
 
@@ -1705,6 +1991,20 @@ function renderAttSummary(records) {
     totalHrs += r.total_hours||0;
     totalOT += r.overtime||0;
   });
+  // Calculate absent days: working days (Mon-Fri) in the period up to today with no record
+  const todayDate = new Date();
+  const lastDay = new Date(calYear, calMonth+1, 0);
+  const endOfPeriod = todayDate < lastDay ? todayDate : lastDay;
+  const recordDates = new Set(records.map(r => r.date));
+  let absent = 0;
+  const cur = new Date(calYear, calMonth, 1);
+  while (cur <= endOfPeriod) {
+    const dow = cur.getDay();
+    const ds = `${cur.getFullYear()}-${pad(cur.getMonth()+1)}-${pad(cur.getDate())}`;
+    if (dow !== 0 && dow !== 6 && !recordDates.has(ds)) absent++;
+    cur.setDate(cur.getDate()+1);
+  }
+  counts.ABSENT = absent;
   const cards = [
     {label:'Present',val:counts.PRESENT,color:'#22c55e'},
     {label:'Late',val:counts.LATE,color:'#f59e0b'},
@@ -1890,6 +2190,9 @@ async function approveLeave(leaveId, empId, leaveType, days) {
   }
   toast('✅ Leave approved','ok');
   logAudit('LEAVE_APPROVE','leave_requests',leaveId,`Approved ${days} days`);
+  // Notify the employee
+  const {data:empUser} = await db.from('employees').select('user_id').eq('id',empId).single();
+  if (empUser?.user_id) await pushNotification(empUser.user_id, '✅ Leave Approved', `Your ${leaveType} leave for ${days} day(s) has been approved.`, 'LEAVE');
   loadLeaves();
   loadLeaveBalanceWidget();
 }
@@ -1903,6 +2206,9 @@ async function confirmReject() {
   if (error) return toast('Failed: '+error.message,'err');
   closeModal('modal-reject');
   toast('Leave rejected','ok');
+  // Notify employee
+  const {data:rejLv} = await db.from('leave_requests').select('employee_id,leave_type,employees(user_id)').eq('id',rejectLeaveId).single();
+  if (rejLv?.employees?.user_id) await pushNotification(rejLv.employees.user_id, '❌ Leave Rejected', `Your ${rejLv.leave_type} leave was rejected. Reason: ${reason}`, 'LEAVE');
   loadLeaves();
 }
 
@@ -1915,8 +2221,8 @@ async function changePassword() {
   if (newPwd.length < 8 || !/[A-Z]/.test(newPwd) || !/[0-9]/.test(newPwd) || !/[^A-Za-z0-9]/.test(newPwd)) return toast('Password must be min 8 chars with upper, number, special','err');
   // Verify current password
   const {data:user} = await db.from('users').select('password').eq('id',USER.id).single();
-  if (!user || user.password !== hashPassword(current)) return toast('Current password incorrect','err');
-  const {error} = await db.from('users').update({password:hashPassword(newPwd),updated_at:new Date().toISOString()}).eq('id',USER.id);
+  if (!user || user.password !== current) return toast('Current password incorrect','err');
+  const {error} = await db.from('users').update({password:newPwd,updated_at:new Date().toISOString()}).eq('id',USER.id);
   if (error) return toast('Failed: '+error.message,'err');
   closeModal('modal-password');
   toast('✅ Password changed successfully','ok');
@@ -1956,7 +2262,7 @@ async function loadEmployees(page = 1, perPage = 20) {
 function renderEmps(list, page = 1, totalPages = 1, perPage = 20) {
   const isAdmin = USER.role==='ADMIN_OFFICER'||USER.role==='CEO';
   const grid = document.getElementById('emp-grid');
-  if (!list.length) { safeInnerHTML(grid, '<div class="empty" style="grid-column:1/-1"><div class="empty-ico">👥</div><div class="empty-txt">No employees found</div></div>'); return; }
+  if (!list.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-ico">👥</div><div class="empty-txt">No employees found</div></div>'; return; }
   const html = list.map(e => {
     const ini = sanitize(e.full_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
     const col = DEPT_COLOR[e.department]||'#6366f1';
@@ -1974,7 +2280,7 @@ function renderEmps(list, page = 1, totalPages = 1, perPage = 20) {
       </div>`:''}
     </div>`;
   }).join('');
-  safeInnerHTML(grid, html);
+  grid.innerHTML = html;
 
   // Add pagination controls
   const paginationContainer = document.getElementById('emp-pagination') || document.createElement('div');
@@ -2092,6 +2398,7 @@ async function saveEmp() {
     logAudit('CREATE_EMP','employees',ne.id,`Created ${name} (${loginId})`);
   }
   closeModal('modal-emp');
+  allEmps = []; // Clear cache so list reloads fresh
   loadEmployees();
 }
 
@@ -2115,27 +2422,32 @@ function valPwd(p) { return p.length>=8&&/[A-Z]/.test(p)&&/[0-9]/.test(p)&&/[^A-
 // ══════════════════════════════════════
 // PAYSLIPS
 // ══════════════════════════════════════
+const psCache = {}; // id → payslip object
+
 async function loadPayslips() {
   const isAdmin = USER.role==='ADMIN_OFFICER'||USER.role==='CEO';
   if (isAdmin) {
     document.getElementById('run-payroll-card').style.display='block';
+    document.getElementById('ps-export-btns').style.display='flex';
     const m = new Date().getMonth()+1;
     document.getElementById('pr-month').value = m>1?m-1:12;
   }
-  let q = db.from('payslips').select('*,employees(full_name)').order('year',{ascending:false}).order('month',{ascending:false});
+  let q = db.from('payslips').select('*,employees(full_name,department,designation)').order('year',{ascending:false}).order('month',{ascending:false});
   if (!isAdmin) q = q.eq('employee_id',EMP?.id||'');
   const {data} = await q.limit(24);
   const el = document.getElementById('ps-list');
   if (!data?.length) { el.innerHTML='<div class="empty"><div class="empty-ico">📄</div><div class="empty-txt">No payslips yet</div></div>'; return; }
+  // Store in cache so printPayslip can access by id
+  data.forEach(p => { psCache[p.id] = p; });
   el.innerHTML = data.map(p=>`<div class="glass ps-card">
     <div class="ps-month"><div class="ps-mon">${MONTHS[p.month-1]}</div><div class="ps-yr">${p.year}</div></div>
     <div class="ps-info">
-      ${isAdmin?`<div style="font-size:11px;color:var(--text2)">${p.employees?.full_name||''}</div>`:''}
+      ${isAdmin?`<div style="font-size:11px;color:var(--text2);margin-bottom:2px">${p.employees?.full_name||''}</div>`:''}
       <div class="ps-net">₹${(p.net_salary||0).toLocaleString('en-IN')}</div>
       <div class="ps-sub">Gross: ₹${(p.gross_salary||0).toLocaleString('en-IN')} | Deductions: ₹${(p.total_deductions||0).toLocaleString('en-IN')}</div>
-      <div class="ps-sub">Present: ${p.present_days}/${p.working_days} days | LOP: ${p.lop_days||0} days</div>
+      <div class="ps-sub">Present: ${p.present_days||0}/${p.working_days||0} days | LOP: ${p.lop_days||0} days | OT: ${p.overtime_hours||0}h</div>
     </div>
-    <button class="btn btn-secondary btn-sm" onclick="printPayslip(${JSON.stringify(p).replace(/'/g,"&#39;")})">⬇ PDF</button>
+    <button class="btn btn-primary btn-sm" onclick="printPayslip('${p.id}')">⬇ PDF</button>
   </div>`).join('');
 }
 
@@ -2150,8 +2462,8 @@ async function runPayroll() {
   for (let d=1;d<=daysInMonth;d++) { const dow=new Date(year,month-1,d).getDay(); if(dow!==0&&dow!==6) workDays++; }
   let done = 0;
   for (const emp of emps) {
-    if (!emp.salary_details) continue;
-    const sd = emp.salary_details;
+    const sd = Array.isArray(emp.salary_details) ? emp.salary_details[0] : emp.salary_details;
+    if (!sd) continue;
     const {data:att} = await db.from('attendance').select('status,overtime').eq('employee_id',emp.id).gte('date',`${year}-${pad(month)}-01`).lte('date',`${year}-${pad(month)}-${daysInMonth}`);
     const present = (att||[]).filter(a=>['PRESENT','LATE','HALF_DAY'].includes(a.status)).length;
     const lop = Math.max(0,workDays-present);
@@ -2167,30 +2479,89 @@ async function runPayroll() {
   }
   toast(`✅ Payroll processed for ${done} employees`,'ok');
   logAudit('PAYROLL','payslips',null,`${MONTH_FULL[month-1]} ${year}`);
+  // Notify all employees their payslip is ready
+  await pushNotificationAll(`💰 Payslip Ready — ${MONTH_FULL[month-1]} ${year}`, `Your salary slip for ${MONTH_FULL[month-1]} ${year} has been processed and is available in the Payslips section.`, 'PAYROLL');
   loadPayslips();
 }
 
-function printPayslip(p) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+function printPayslip(id) {
+  const p = psCache[id];
+  if (!p) return toast('Payslip data not found','err');
+
   const empName = p.employees?.full_name || EMP?.full_name || 'Employee';
-  doc.setFontSize(16);
-  doc.text('Treffer Technologies', 20, 20);
-  doc.setFontSize(12);
-  doc.text('Salary Slip for ' + MONTH_FULL[p.month-1] + ' ' + p.year, 20, 30);
-  doc.text('Employee: ' + empName, 20, 45);
-  doc.text('Month: ' + MONTH_FULL[p.month-1] + ' ' + p.year, 20, 55);
-  doc.text('Working Days: ' + p.working_days, 20, 65);
-  doc.text('Days Present: ' + p.present_days, 20, 75);
-  doc.text('LOP Days: ' + (p.lop_days||0), 20, 85);
-  doc.text('Overtime Hrs: ' + (p.overtime_hours||0), 20, 95);
-  doc.text('Gross Salary: ₹' + (p.gross_salary||0).toLocaleString('en-IN'), 20, 110);
-  doc.text('Total Deductions: ₹' + (p.total_deductions||0).toLocaleString('en-IN'), 20, 120);
-  doc.setFontSize(14);
-  doc.text('Net Salary: ₹' + (p.net_salary||0).toLocaleString('en-IN'), 20, 135);
-  doc.setFontSize(10);
-  doc.text('Generated on ' + new Date().toLocaleDateString('en-IN'), 20, 150);
-  doc.save('Payslip_' + MONTH_FULL[p.month-1] + '_' + p.year + '.pdf');
+  const dept    = p.employees?.department || EMP?.department || '';
+  const desig   = p.employees?.designation || EMP?.designation || '';
+  const loginId = USER.loginId || '';
+  const period  = MONTH_FULL[p.month-1] + ' ' + p.year;
+
+  const rows = [
+    ['Employee Name',    empName],
+    ['Employee ID',      loginId],
+    ['Department',       dept],
+    ['Designation',      desig],
+    ['Pay Period',       period],
+    ['Working Days',     p.working_days || 0],
+    ['Days Present',     p.present_days || 0],
+    ['Loss of Pay Days', p.lop_days || 0],
+    ['Overtime Hours',   (p.overtime_hours || 0) + ' hrs'],
+    ['Gross Salary',     'Rs. ' + (p.gross_salary || 0).toLocaleString('en-IN')],
+    ['Total Deductions', 'Rs. ' + (p.total_deductions || 0).toLocaleString('en-IN')],
+    ['Net Salary',       'Rs. ' + (p.net_salary || 0).toLocaleString('en-IN')],
+  ];
+
+  const cL = 200, cR = 220, rH = 28, topH = 40, scale = 2;
+  const W = cL + cR, H = topH + rows.length * rH;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * scale; canvas.height = H * scale;
+  const c = canvas.getContext('2d');
+  c.scale(scale, scale);
+
+  // White bg
+  c.fillStyle = '#ffffff'; c.fillRect(0, 0, W, H);
+
+  // Red top bar
+  c.fillStyle = '#C41E1E'; c.fillRect(0, 0, W, topH);
+  c.fillStyle = '#ffffff'; c.font = 'bold 13px Arial';
+  c.fillText('SALARY SLIP — ' + period.toUpperCase(), 12, 16);
+  c.font = '11px Arial'; c.fillStyle = 'rgba(255,255,255,0.75)';
+  c.fillText(empName, 12, 30);
+
+  // Rows
+  rows.forEach((r, i) => {
+    const y = topH + i * rH;
+    const isNet = r[0] === 'Net Salary';
+    c.fillStyle = isNet ? '#C41E1E' : (i % 2 === 0 ? '#ffffff' : '#f5f5f5');
+    c.fillRect(0, y, W, rH);
+
+    c.fillStyle = isNet ? '#ffffff' : '#555555';
+    c.font = '11px Arial';
+    c.fillText(r[0], 12, y + rH / 2 + 4);
+
+    c.fillStyle = isNet ? '#ffffff' : '#111111';
+    c.font = isNet ? 'bold 12px Arial' : '11px Arial';
+    c.textAlign = 'right';
+    c.fillText(String(r[1]), W - 12, y + rH / 2 + 4);
+    c.textAlign = 'left';
+
+    // row border
+    c.strokeStyle = '#e8e8e8'; c.lineWidth = 0.5;
+    c.beginPath(); c.moveTo(0, y + rH); c.lineTo(W, y + rH); c.stroke();
+  });
+
+  // Column divider
+  c.strokeStyle = '#dddddd'; c.lineWidth = 0.5;
+  c.beginPath(); c.moveTo(cL, topH); c.lineTo(cL, H); c.stroke();
+
+  // Outer border — red
+  c.strokeStyle = '#C41E1E'; c.lineWidth = 1.5;
+  c.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
+
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'Payslip_' + empName.replace(/\s+/g,'_') + '_' + period.replace(/\s+/g,'_') + '.png';
+  a.click();
+  toast('✅ Payslip image downloaded','ok');
 }
 
 // ══════════════════════════════════════
@@ -2224,6 +2595,8 @@ async function submitAnn() {
   if (error) return toast('Failed: '+error.message,'err');
   closeModal('modal-ann');
   toast('✅ Announcement posted','ok');
+  logAudit('POST_ANN','announcements',null,title);
+  await pushNotificationAll(`📢 ${title}`, body.slice(0,120)+(body.length>120?'...':''), 'ANNOUNCEMENT');
   loadAnnouncements();
 }
 
@@ -2408,37 +2781,175 @@ async function loadProfile() {
 // ══════════════════════════════════════
 // REPORTS
 // ══════════════════════════════════════
+let _reportChart = null;
+function destroyChart() { if (_reportChart) { _reportChart.destroy(); _reportChart = null; } }
+
 async function showReport(type, btn) {
+  currentReportType = type;
   document.querySelectorAll('#page-reports .fb').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  const exportBtn = document.getElementById('report-export-btn');
+  if (exportBtn) exportBtn.style.display = 'inline-flex';
+  destroyChart();
   const el = document.getElementById('report-box');
   el.innerHTML = '<div class="empty"><div class="empty-ico">⏳</div><div class="empty-txt">Loading...</div></div>';
   const today = new Date();
+
+  const chartDefaults = {
+    plugins: { legend: { labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'Inter', size: 11 } } } },
+    scales: {
+      x: { ticks: { color: 'rgba(255,255,255,0.45)', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
+      y: { ticks: { color: 'rgba(255,255,255,0.45)', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+    }
+  };
+
   if (type==='attendance') {
-    const {data} = await db.from('attendance').select('status').gte('date',`${today.getFullYear()}-${pad(today.getMonth()+1)}-01`);
-    const c={PRESENT:0,ABSENT:0,LATE:0,HALF_DAY:0,ON_LEAVE:0};
-    (data||[]).forEach(r=>{if(c[r.status]!==undefined)c[r.status]++;});
-    el.innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">Attendance Report — ${MONTH_FULL[today.getMonth()]} ${today.getFullYear()}</div>
-    <div class="stats-grid">${Object.entries(c).map(([k,v])=>`<div class="glass stat-card"><div class="stat-val">${v}</div><div class="stat-lbl">${k.replace('_',' ')}</div></div>`).join('')}</div>`;
+    // Fetch last 6 months of attendance
+    const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth()-5, 1);
+    const {data} = await db.from('attendance').select('date,status').gte('date', sixMonthsAgo.toISOString().split('T')[0]).order('date');
+    // Monthly buckets
+    const months = [];
+    for (let i=5; i>=0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+      months.push({ label: MONTHS[d.getMonth()]+' '+d.getFullYear(), key: `${d.getFullYear()}-${pad(d.getMonth()+1)}`, present:0, late:0, absent:0, leave:0 });
+    }
+    (data||[]).forEach(r => {
+      const mk = r.date?.slice(0,7);
+      const m = months.find(m=>m.key===mk);
+      if (!m) return;
+      if (r.status==='PRESENT') m.present++;
+      else if (r.status==='LATE') m.late++;
+      else if (r.status==='ABSENT') m.absent++;
+      else if (r.status==='ON_LEAVE') m.leave++;
+    });
+    // Summary stats for current month
+    const cur = months[months.length-1];
+    const total = cur.present+cur.late+cur.absent+cur.leave;
+    el.innerHTML = `
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">Attendance Report — Last 6 Months</div>
+      <div class="stats-grid" style="margin-bottom:18px">
+        <div class="glass stat-card"><div class="stat-val" style="color:#86efac">${cur.present}</div><div class="stat-lbl">Present (${MONTHS[today.getMonth()]})</div></div>
+        <div class="glass stat-card"><div class="stat-val" style="color:#fcd34d">${cur.late}</div><div class="stat-lbl">Late</div></div>
+        <div class="glass stat-card"><div class="stat-val" style="color:#ff8080">${cur.absent}</div><div class="stat-lbl">Absent</div></div>
+        <div class="glass stat-card"><div class="stat-val" style="color:#a5b4fc">${cur.leave}</div><div class="stat-lbl">On Leave</div></div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="report-chart"></canvas></div>`;
+    const ctx = document.getElementById('report-chart').getContext('2d');
+    _reportChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: months.map(m=>m.label),
+        datasets: [
+          { label:'Present', data: months.map(m=>m.present), backgroundColor:'rgba(34,197,94,0.7)', borderRadius:4 },
+          { label:'Late',    data: months.map(m=>m.late),    backgroundColor:'rgba(245,158,11,0.7)', borderRadius:4 },
+          { label:'Absent',  data: months.map(m=>m.absent),  backgroundColor:'rgba(196,30,30,0.7)',  borderRadius:4 },
+          { label:'Leave',   data: months.map(m=>m.leave),   backgroundColor:'rgba(99,102,241,0.7)', borderRadius:4 },
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins: chartDefaults.plugins, scales: { x:{...chartDefaults.scales.x, stacked:true}, y:{...chartDefaults.scales.y, stacked:true} } }
+    });
+
   } else if (type==='leaves') {
     const {data} = await db.from('leave_balances').select('*,employees(full_name)').eq('year',today.getFullYear());
-    el.innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">Leave Balance Report — ${today.getFullYear()}</div>
-    <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Type</th><th>Total</th><th>Used</th><th>Remaining</th></tr></thead>
-    <tbody>${(data||[]).map(b=>`<tr><td>${b.employees?.full_name||'?'}</td><td>${b.leave_type}</td><td>${b.total}</td><td>${b.used}</td><td style="color:var(--green);font-weight:700">${b.remaining}</td></tr>`).join('')}</tbody></table></div>`;
+    // Aggregate used by type
+    const byType = {};
+    (data||[]).forEach(b => { byType[b.leave_type] = (byType[b.leave_type]||0) + (b.used||0); });
+    const typeColors = { CASUAL:'rgba(99,102,241,0.8)', SICK:'rgba(34,197,94,0.8)', EARNED:'rgba(245,158,11,0.8)', LOP:'rgba(196,30,30,0.8)', COMP_OFF:'rgba(168,85,247,0.8)' };
+    el.innerHTML = `
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">Leave Balance Report — ${today.getFullYear()}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+        <div style="position:relative;height:220px"><canvas id="report-chart"></canvas></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Type</th><th>Total</th><th>Used</th><th>Left</th></tr></thead>
+        <tbody>${(data||[]).map(b=>`<tr><td>${b.employees?.full_name||'?'}</td><td>${b.leave_type}</td><td>${b.total}</td><td>${b.used}</td><td style="color:var(--green);font-weight:700">${b.remaining}</td></tr>`).join('')}</tbody></table></div>
+      </div>`;
+    const ctx = document.getElementById('report-chart').getContext('2d');
+    _reportChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(byType),
+        datasets: [{ data: Object.values(byType), backgroundColor: Object.keys(byType).map(k=>typeColors[k]||'rgba(255,255,255,0.4)'), borderWidth:0, hoverOffset:6 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ ...chartDefaults.plugins, legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,0.6)', font:{family:'Inter',size:11}, padding:12 } } }, cutout:'65%' }
+    });
+
   } else if (type==='payroll') {
     const m = today.getMonth()===0?12:today.getMonth(), y = today.getMonth()===0?today.getFullYear()-1:today.getFullYear();
-    const {data} = await db.from('payslips').select('*,employees(full_name)').eq('month',m).eq('year',y);
-    const total = (data||[]).reduce((s,p)=>s+p.net_salary,0);
-    el.innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">Payroll Report — ${MONTH_FULL[m-1]} ${y}</div>
-    <div class="glass stat-card" style="padding:16px;display:inline-block;margin-bottom:14px"><div class="stat-val">₹${total.toLocaleString('en-IN')}</div><div class="stat-lbl">Total Payroll Cost</div></div>
-    <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Gross</th><th>Deductions</th><th>Net Pay</th><th>LOP</th></tr></thead>
-    <tbody>${(data||[]).map(p=>`<tr><td>${p.employees?.full_name||'?'}</td><td>₹${(p.gross_salary||0).toLocaleString('en-IN')}</td><td>₹${(p.total_deductions||0).toLocaleString('en-IN')}</td><td style="color:var(--green);font-weight:700">₹${(p.net_salary||0).toLocaleString('en-IN')}</td><td>${p.lop_days||0}</td></tr>`).join('')}</tbody></table></div>`;
+    // Last 6 months totals
+    const months6 = [];
+    for (let i=5; i>=0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+      months6.push({ label: MONTHS[d.getMonth()], month: d.getMonth()+1, year: d.getFullYear(), gross:0, net:0 });
+    }
+    const {data:allPay} = await db.from('payslips').select('month,year,gross_salary,net_salary,total_deductions,lop_days,employees(full_name)').in('month', months6.map(x=>x.month)).in('year',[...new Set(months6.map(x=>x.year))]);
+    (allPay||[]).forEach(p => {
+      const m2 = months6.find(x=>x.month===p.month&&x.year===p.year);
+      if (m2) { m2.gross += p.gross_salary||0; m2.net += p.net_salary||0; }
+    });
+    const curMonthData = (allPay||[]).filter(p=>p.month===m&&p.year===y);
+    const total = curMonthData.reduce((s,p)=>s+(p.net_salary||0),0);
+    el.innerHTML = `
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">Payroll Report — ${MONTH_FULL[m-1]} ${y}</div>
+      <div class="glass stat-card" style="padding:16px;display:inline-block;margin-bottom:14px"><div class="stat-val">₹${total.toLocaleString('en-IN')}</div><div class="stat-lbl">Total Net Payroll</div></div>
+      <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="report-chart"></canvas></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Gross</th><th>Deductions</th><th>Net Pay</th><th>LOP</th></tr></thead>
+      <tbody>${curMonthData.map(p=>`<tr><td>${p.employees?.full_name||'?'}</td><td>₹${(p.gross_salary||0).toLocaleString('en-IN')}</td><td>₹${(p.total_deductions||0).toLocaleString('en-IN')}</td><td style="color:var(--green);font-weight:700">₹${(p.net_salary||0).toLocaleString('en-IN')}</td><td>${p.lop_days||0}</td></tr>`).join('')}</tbody></table></div>`;
+    const ctx = document.getElementById('report-chart').getContext('2d');
+    _reportChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months6.map(m=>m.label),
+        datasets: [
+          { label:'Gross Payroll', data: months6.map(m=>m.gross), borderColor:'rgba(196,30,30,0.9)', backgroundColor:'rgba(196,30,30,0.08)', fill:true, tension:0.4, pointBackgroundColor:'rgba(196,30,30,1)', pointRadius:4 },
+          { label:'Net Payroll',   data: months6.map(m=>m.net),   borderColor:'rgba(34,197,94,0.9)',  backgroundColor:'rgba(34,197,94,0.08)',  fill:true, tension:0.4, pointBackgroundColor:'rgba(34,197,94,1)',  pointRadius:4 },
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:chartDefaults.plugins, scales:{ x:chartDefaults.scales.x, y:{ ...chartDefaults.scales.y, ticks:{ ...chartDefaults.scales.y.ticks, callback:v=>'₹'+Number(v).toLocaleString('en-IN') } } } }
+    });
+
   } else if (type==='headcount') {
-    const {data} = await db.from('employees').select('department,users(is_active)');
-    const counts = {};
-    (data||[]).forEach(e=>{counts[e.department]=(counts[e.department]||0)+1;});
-    el.innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">Headcount Report — Total: ${(data||[]).length}</div>
-    <div class="stats-grid">${Object.entries(counts).map(([k,v])=>`<div class="glass stat-card"><div class="stat-val">${v}</div><div class="stat-lbl">${k}</div></div>`).join('')}</div>`;
+    const {data} = await db.from('employees').select('department,employment_type,status');
+    const deptCounts = {};
+    const typeCounts = {};
+    (data||[]).forEach(e => {
+      deptCounts[e.department] = (deptCounts[e.department]||0)+1;
+      typeCounts[e.employment_type||'FULL_TIME'] = (typeCounts[e.employment_type||'FULL_TIME']||0)+1;
+    });
+    const deptColors = { DESIGN:'rgba(99,102,241,0.8)', DATA:'rgba(34,197,94,0.8)', MARKETING:'rgba(245,158,11,0.8)', LEADERSHIP:'rgba(196,30,30,0.8)' };
+    el.innerHTML = `
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">Headcount Report — Total: ${(data||[]).length}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">By Department</div>
+          <div style="position:relative;height:200px"><canvas id="report-chart"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">By Employment Type</div>
+          <div style="position:relative;height:200px"><canvas id="report-chart2"></canvas></div>
+          <div class="stats-grid" style="margin-top:12px;grid-template-columns:repeat(2,1fr)">
+            ${Object.entries(deptCounts).map(([k,v])=>`<div class="glass stat-card"><div class="stat-val">${v}</div><div class="stat-lbl">${k}</div></div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    const ctx = document.getElementById('report-chart').getContext('2d');
+    _reportChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(deptCounts),
+        datasets: [{ data: Object.values(deptCounts), backgroundColor: Object.keys(deptCounts).map(k=>deptColors[k]||'rgba(255,255,255,0.3)'), borderWidth:0, hoverOffset:6 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ ...chartDefaults.plugins, legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,0.6)', font:{family:'Inter',size:11}, padding:10 } } } }
+    });
+    const ctx2 = document.getElementById('report-chart2')?.getContext('2d');
+    if (ctx2) {
+      new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(typeCounts).map(k=>k.replace('_',' ')),
+          datasets: [{ data: Object.values(typeCounts), backgroundColor:['rgba(99,102,241,0.8)','rgba(245,158,11,0.8)','rgba(168,85,247,0.8)'], borderWidth:0, hoverOffset:6 }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ ...chartDefaults.plugins, legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,0.6)', font:{family:'Inter',size:11}, padding:10 } } } }
+      });
+    }
   }
 }
 
@@ -2559,21 +3070,98 @@ async function deleteShift(id) {
 // NOTIFICATIONS
 // ══════════════════════════════════════
 async function loadNotifications() {
-  const {data} = await db.from('notifications').select('*').eq('user_id',USER.id).order('created_at',{ascending:false}).limit(20);
+  const {data} = await db.from('notifications').select('*').eq('user_id',USER.id).order('created_at',{ascending:false}).limit(30);
   const unread = (data||[]).filter(n=>!n.is_read);
-  if (unread.length) document.getElementById('ndot').style.display='block';
+  const cnt = unread.length;
+  const dot = document.getElementById('ndot');
+  const cntEl = document.getElementById('ndot-count');
+  if (cnt > 0) {
+    dot.style.display = 'block';
+    cntEl.style.display = 'inline-block';
+    cntEl.textContent = cnt > 9 ? '9+' : cnt;
+  } else {
+    dot.style.display = 'none';
+    cntEl.style.display = 'none';
+  }
+  const typeIco = {LEAVE:'🌿', PAYROLL:'💰', ANNOUNCEMENT:'📢', GRIEVANCE:'⚠️', SYSTEM:'🔔'};
   document.getElementById('np-list').innerHTML = (data||[]).length
-    ? (data||[]).map(n=>`<div class="np-item${n.is_read?'':' unread'}"><div class="np-item-t">${n.title}</div><div class="np-item-m">${n.message}</div><div class="np-item-d">${fmtDate(n.created_at)}</div></div>`).join('')
+    ? (data||[]).map(n=>`
+      <div class="np-item${n.is_read?'':' unread'}" onclick="markNotifRead('${n.id}')">
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <span style="font-size:16px;flex-shrink:0">${typeIco[n.type]||'🔔'}</span>
+          <div style="min-width:0">
+            <div class="np-item-t">${n.title}</div>
+            <div class="np-item-m">${n.message}</div>
+            <div class="np-item-d">${fmtDate(n.created_at)}</div>
+          </div>
+          ${!n.is_read?'<div style="width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:4px"></div>':''}
+        </div>
+      </div>`).join('')
     : '<div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">No notifications</div></div>';
 }
 
-function toggleNotif(e) { document.getElementById('notif-panel').classList.toggle('open'); }
+async function markNotifRead(id) {
+  await db.from('notifications').update({is_read:true}).eq('id',id);
+  loadNotifications();
+}
+
+function toggleNotif(e) {
+  document.getElementById('notif-panel').classList.toggle('open');
+  // Mark all as read when panel opens
+  const panel = document.getElementById('notif-panel');
+  if (panel.classList.contains('open')) {
+    setTimeout(async () => {
+      await db.from('notifications').update({is_read:true}).eq('user_id',USER.id).eq('is_read',false);
+      document.getElementById('ndot').style.display='none';
+      document.getElementById('ndot-count').style.display='none';
+      loadNotifications();
+    }, 1500);
+  }
+}
 
 async function markAllRead() {
   await db.from('notifications').update({is_read:true}).eq('user_id',USER.id);
   document.getElementById('ndot').style.display='none';
+  document.getElementById('ndot-count').style.display='none';
   loadNotifications();
   toast('All marked as read','ok');
+}
+
+// ── Push a notification to a user ─────────────────────────
+async function pushNotification(userId, title, message, type='SYSTEM') {
+  if (!userId) return;
+  await db.from('notifications').insert({user_id:userId, title, message, type, is_read:false}).catch(()=>{});
+}
+
+// ── Push notification to all active users ─────────────────
+async function pushNotificationAll(title, message, type='ANNOUNCEMENT') {
+  const {data:users} = await db.from('users').select('id').eq('is_active',true);
+  if (!users?.length) return;
+  const rows = users.map(u => ({user_id:u.id, title, message, type, is_read:false}));
+  await db.from('notifications').insert(rows).catch(()=>{});
+}
+
+// ── Show a popup notification bubble ──────────────────────
+function showNotifPopup(title, message, type='ok') {
+  const container = document.getElementById('notif-popups');
+  const div = document.createElement('div');
+  div.className = `notif-popup ${type}`;
+  div.style.pointerEvents = 'all';
+  div.innerHTML = `<div class="np-title">${title}</div><div class="np-body">${message}</div>`;
+  container.appendChild(div);
+  setTimeout(() => { div.style.opacity='0'; div.style.transform='translateX(24px)'; div.style.transition='all 0.4s'; setTimeout(()=>div.remove(), 400); }, 5000);
+  div.onclick = () => div.remove();
+}
+
+// ── Supabase realtime — listen for new notifications ──────
+function initRealtimeNotifications() {
+  db.channel('notifications-live')
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'notifications', filter:`user_id=eq.${USER.id}`}, payload => {
+      const n = payload.new;
+      showNotifPopup(n.title, n.message, n.type === 'LEAVE' ? 'ok' : n.type === 'ANNOUNCEMENT' ? 'info' : 'ok');
+      loadNotifications();
+    })
+    .subscribe();
 }
 
 // ══════════════════════════════════════
@@ -2588,6 +3176,244 @@ function initSessionTimeout() {
   };
   ['mousemove','keydown','click','scroll','touchstart'].forEach(e=>document.addEventListener(e,reset,{passive:true}));
   reset();
+}
+
+// ══════════════════════════════════════
+// HOLIDAYS
+// ══════════════════════════════════════
+const HOL_TYPE_COLOR = { NATIONAL:'b-red', REGIONAL:'b-blue', OPTIONAL:'b-gray', COMPANY:'b-purple' };
+const HOL_TYPE_LABEL = { NATIONAL:'National', REGIONAL:'Regional', OPTIONAL:'Optional', COMPANY:'Company' };
+
+async function loadHolidays() {
+  const isAdmin = USER.role==='CEO'||USER.role==='ADMIN_OFFICER';
+  const addBtn = document.getElementById('add-hol-btn');
+  if (addBtn) addBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const yearSel = document.getElementById('hol-year-sel');
+  const curY = new Date().getFullYear().toString();
+  if (yearSel && !yearSel.dataset.init) {
+    yearSel.dataset.init = '1';
+    // Set to current year if available, else first option
+    const opt = yearSel.querySelector(`option[value="${curY}"]`);
+    if (opt) opt.selected = true;
+  }
+  const year = parseInt(yearSel?.value || curY);
+
+  const {data, error} = await db.from('holidays').select('*').gte('date',`${year}-01-01`).lte('date',`${year}-12-31`).order('date');
+  const holidays = data || [];
+
+  // List view
+  const listEl = document.getElementById('hol-list');
+  if (!holidays.length) {
+    listEl.innerHTML = '<div class="empty"><div class="empty-ico">🗓️</div><div class="empty-txt">No holidays added for '+year+'</div></div>';
+  } else {
+    listEl.innerHTML = holidays.map(h => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px">
+        <div style="width:48px;height:48px;border-radius:10px;background:rgba(168,85,247,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+          <div style="font-size:10px;font-weight:700;color:#d8b4fe;text-transform:uppercase">${MONTHS[new Date(h.date+'T00:00:00').getMonth()]}</div>
+          <div style="font-size:18px;font-weight:800">${new Date(h.date+'T00:00:00').getDate()}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700">${sanitize(h.name)}</div>
+          ${h.description ? `<div style="font-size:11px;color:var(--text2);margin-top:2px">${sanitize(h.description)}</div>` : ''}
+        </div>
+        <span class="badge ${HOL_TYPE_COLOR[h.type]||'b-gray'}">${HOL_TYPE_LABEL[h.type]||h.type}</span>
+        ${isAdmin ? `<button class="btn btn-danger btn-sm" onclick="deleteHoliday('${h.id}')">Delete</button>` : ''}
+      </div>`).join('');
+  }
+
+  // Month grid — group by month
+  const byMonth = {};
+  holidays.forEach(h => {
+    const m = new Date(h.date+'T00:00:00').getMonth();
+    if (!byMonth[m]) byMonth[m] = [];
+    byMonth[m].push(h);
+  });
+  const monthEl = document.getElementById('hol-month-grid');
+  let monthHtml = '';
+  for (let m=0; m<12; m++) {
+    const hs = byMonth[m] || [];
+    monthHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;font-weight:600;color:${hs.length?'var(--text)':'var(--text3)'}">${MONTH_FULL[m]}</span>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+        ${hs.length ? hs.map(h=>`<span class="badge b-purple" title="${sanitize(h.name)}">${new Date(h.date+'T00:00:00').getDate()} ${MONTHS[m]}</span>`).join('') : '<span style="font-size:11px;color:var(--text3)">—</span>'}
+      </div>
+    </div>`;
+  }
+  monthEl.innerHTML = `<div style="font-size:12px;color:var(--text2);margin-bottom:6px">${holidays.length} holiday${holidays.length!==1?'s':''} in ${year}</div>`+monthHtml;
+}
+
+function openHolidayModal() {
+  document.getElementById('hol-name').value = '';
+  document.getElementById('hol-date').value = '';
+  document.getElementById('hol-type').value = 'NATIONAL';
+  document.getElementById('hol-desc').value = '';
+  openModal('modal-holiday');
+}
+
+async function saveHoliday() {
+  const name = document.getElementById('hol-name').value.trim();
+  const date = document.getElementById('hol-date').value;
+  const type = document.getElementById('hol-type').value;
+  const desc = document.getElementById('hol-desc').value.trim();
+  if (!name) return toast('Enter holiday name','err');
+  if (!date) return toast('Select a date','err');
+  const {error} = await db.from('holidays').insert({name, date, type, description:desc||null});
+  if (error) return toast('Failed: '+error.message,'err');
+  closeModal('modal-holiday');
+  toast('✅ Holiday added','ok');
+  logAudit('HOLIDAY_ADD','holidays',null,`Added: ${name} on ${date}`);
+  loadHolidays();
+}
+
+async function deleteHoliday(id) {
+  if (!confirm('Remove this holiday?')) return;
+  const {error} = await db.from('holidays').delete().eq('id',id);
+  if (error) return toast('Failed: '+error.message,'err');
+  toast('✅ Holiday removed','ok');
+  loadHolidays();
+}
+
+// ══════════════════════════════════════
+// AUDIT LOG
+// ══════════════════════════════════════
+let auditPage = 1;
+const AUDIT_PER_PAGE = 25;
+
+async function loadAuditLog(page) {
+  const r = USER.role;
+  if (r!=='CEO'&&r!=='ADMIN_OFFICER') { navigate('dashboard'); return; }
+  if (page) auditPage = page;
+  const actionFilter = document.getElementById('audit-action-filter')?.value || '';
+  const offset = (auditPage-1)*AUDIT_PER_PAGE;
+
+  let q = db.from('audit_logs').select('*,users(login_id)',{count:'exact'}).order('created_at',{ascending:false}).range(offset, offset+AUDIT_PER_PAGE-1);
+  if (actionFilter) q = q.eq('action', actionFilter);
+
+  const {data, count, error} = await q;
+  const logs = data || [];
+
+  const countEl = document.getElementById('audit-count');
+  if (countEl) countEl.textContent = `${count||0} total records`;
+
+  const actionBadge = {
+    CLOCK_IN:'b-green', CLOCK_OUT:'b-green', LEAVE_APPLY:'b-blue', LEAVE_APPROVE:'b-green',
+    LEAVE_REJECT:'b-red', LEAVE_CANCEL:'b-orange', PASSWORD_RESET:'b-red',
+    SETTINGS_UPDATE:'b-yellow', LOGOUT:'b-gray', HOLIDAY_ADD:'b-purple',
+    PAYROLL_RUN:'b-blue', EMPLOYEE_ADD:'b-green', EMPLOYEE_EDIT:'b-yellow'
+  };
+
+  const tbody = document.getElementById('audit-tbody');
+  tbody.innerHTML = logs.length ? logs.map(l => `
+    <tr>
+      <td style="white-space:nowrap">${fmtDate(l.created_at)}<br><span style="font-size:10px;color:var(--text3)">${l.created_at?new Date(l.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}):''}</span></td>
+      <td style="font-size:12px">${sanitize(l.users?.login_id||'System')}</td>
+      <td><span class="badge ${actionBadge[l.action]||'b-gray'}" style="font-size:9px">${sanitize(l.action||'')}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${sanitize(l.entity||'—')}</td>
+      <td style="font-size:11px;color:var(--text2);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${sanitize(l.details||'')}">${sanitize(l.details||'—')}</td>
+    </tr>`).join('')
+    : '<tr><td colspan="5" class="empty" style="text-align:center;padding:24px">No audit records found</td></tr>';
+
+  // Pagination
+  const totalPages = Math.ceil((count||0)/AUDIT_PER_PAGE);
+  const pagEl = document.getElementById('audit-pagination');
+  if (totalPages > 1) {
+    let btns = '';
+    for (let i=1; i<=Math.min(totalPages,8); i++) {
+      btns += `<button class="fb${i===auditPage?' active':''}" onclick="loadAuditLog(${i})" style="min-width:32px;padding:5px 10px">${i}</button>`;
+    }
+    pagEl.innerHTML = btns;
+  } else {
+    pagEl.innerHTML = '';
+  }
+}
+
+// ══════════════════════════════════════
+// ADMIN PASSWORD RESET (settings page)
+// ══════════════════════════════════════
+async function adminResetPwd() {
+  const sel = document.getElementById('pwd-emp');
+  const pwd = document.getElementById('admin-pwd-val').value.trim();
+  const userId = sel.value;
+  const name = sel.options[sel.selectedIndex]?.text || '';
+  if (!userId) return toast('Select an employee','err');
+  if (!valPwd(pwd)) return toast('Password must be 8+ chars with uppercase, number, special char','err');
+  await doResetPwd(userId, pwd, name);
+  document.getElementById('admin-pwd-val').value = '';
+}
+
+// ══════════════════════════════════════
+// CSV EXPORT UTILITIES
+// ══════════════════════════════════════
+function downloadCSV(filename, rows) {
+  const csv = rows.map(r => r.map(c => `"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function exportPayrollCSV() {
+  const month = parseInt(document.getElementById('pr-month').value);
+  const year = parseInt(document.getElementById('pr-year').value);
+  const {data} = await db.from('payslips').select('*,employees(full_name,department)').eq('month',month).eq('year',year).order('employees(full_name)');
+  if (!data?.length) return toast('No payroll data for selected period','err');
+  const rows = [['Employee','Department','Month','Year','Working Days','Present Days','LOP Days','OT Hours','Gross (₹)','Deductions (₹)','Net Salary (₹)']];
+  data.forEach(p => rows.push([p.employees?.full_name||'',p.employees?.department||'',MONTH_FULL[month-1],year,p.working_days,p.present_days,p.lop_days||0,p.overtime_hours||0,p.gross_salary||0,p.total_deductions||0,p.net_salary||0]));
+  downloadCSV(`Payroll_${MONTH_FULL[month-1]}_${year}.csv`, rows);
+  toast('✅ Payroll CSV downloaded','ok');
+}
+
+async function exportAllPayslipsCSV() {
+  const isAdmin = USER.role==='ADMIN_OFFICER'||USER.role==='CEO';
+  let q = db.from('payslips').select('*,employees(full_name,department)').order('year',{ascending:false}).order('month',{ascending:false});
+  if (!isAdmin) q = q.eq('employee_id',EMP?.id||'');
+  const {data} = await q.limit(200);
+  if (!data?.length) return toast('No payslips found','err');
+  const rows = [['Employee','Department','Month','Year','Working Days','Present Days','LOP Days','OT Hours','Gross (₹)','Deductions (₹)','Net Salary (₹)']];
+  data.forEach(p => rows.push([p.employees?.full_name||'',p.employees?.department||'',MONTH_FULL[p.month-1],p.year,p.working_days,p.present_days,p.lop_days||0,p.overtime_hours||0,p.gross_salary||0,p.total_deductions||0,p.net_salary||0]));
+  downloadCSV(`All_Payslips_${new Date().toISOString().split('T')[0]}.csv`, rows);
+  toast('✅ All payslips CSV downloaded','ok');
+}
+
+let currentReportType = 'attendance';
+async function exportCurrentReport() {
+  if (currentReportType === 'attendance') await exportAttendanceCSV();
+  else if (currentReportType === 'leaves') await exportLeaveCSV();
+  else if (currentReportType === 'payroll') await exportPayrollCSV();
+  else if (currentReportType === 'headcount') await exportHeadcountCSV();
+}
+
+async function exportAttendanceCSV() {
+  const now = new Date();
+  const m = now.getMonth()+1, y = now.getFullYear();
+  const last = new Date(y,m,0).getDate();
+  const {data} = await db.from('attendance').select('*,employees(full_name,department)').gte('date',`${y}-${pad(m)}-01`).lte('date',`${y}-${pad(m)}-${last}`).order('date');
+  if (!data?.length) return toast('No attendance data','err');
+  const rows = [['Employee','Department','Date','Clock In','Clock Out','Hours','Status','Overtime']];
+  data.forEach(r => rows.push([r.employees?.full_name||'',r.employees?.department||'',r.date,r.clock_in?fmtTime(new Date(r.clock_in)):'',r.clock_out?fmtTime(new Date(r.clock_out)):'',r.total_hours||0,r.status||'',r.overtime||0]));
+  downloadCSV(`Attendance_${MONTH_FULL[m-1]}_${y}.csv`, rows);
+  toast('✅ Attendance CSV downloaded','ok');
+}
+
+async function exportLeaveCSV() {
+  const {data} = await db.from('leave_requests').select('*,employees(full_name,department)').order('created_at',{ascending:false}).limit(500);
+  if (!data?.length) return toast('No leave data','err');
+  const rows = [['Employee','Department','Type','From','To','Days','Reason','Status','Rejection Reason']];
+  data.forEach(r => rows.push([r.employees?.full_name||'',r.employees?.department||'',r.leave_type,r.from_date,r.to_date,r.total_days,r.reason,r.status,r.rejection_reason||'']));
+  downloadCSV(`Leave_Report_${new Date().toISOString().split('T')[0]}.csv`, rows);
+  toast('✅ Leave CSV downloaded','ok');
+}
+
+async function exportHeadcountCSV() {
+  const {data} = await db.from('employees').select('full_name,department,designation,employment_type,date_of_joining,status,users(role)').order('department').order('full_name');
+  if (!data?.length) return toast('No employee data','err');
+  const rows = [['Name','Department','Designation','Role','Employment Type','Date of Joining','Status']];
+  data.forEach(e => rows.push([e.full_name,e.department,e.designation,fmtRole(e.users?.role||'EMPLOYEE'),e.employment_type||'',e.date_of_joining||'',e.status||'ACTIVE']));
+  downloadCSV(`Headcount_${new Date().toISOString().split('T')[0]}.csv`, rows);
+  toast('✅ Headcount CSV downloaded','ok');
 }
 
 // ══════════════════════════════════════
@@ -2635,7 +3461,7 @@ function setLang(l) {
 }
 
 function wayneGreet() {
-  const name = (user.fullName || '').split(' ')[0];
+  const name = (USER.fullName || '').split(' ')[0];
   const greet = wayneLang === 'ta'
     ? `வணக்கம் ${name}! நான் Wayne AI. உங்கள் HR கேள்விகளுக்கு உதவ தயாராக இருக்கிறேன்.`
     : `Hi ${name}! I'm Wayne, your HR assistant. How can I help you today?`;
@@ -2644,12 +3470,21 @@ function wayneGreet() {
 }
 
 function renderChips() {
-  const chips = wayneLang === 'ta'
-    ? ['விடுப்பு சமநிலை', 'இன்று வருகை', 'அடுத்த விடுமுறை', 'விடுப்பு கோரிக்கை']
-    : ['My leave balance', 'Today\'s attendance', 'Next holiday', 'Apply for leave'];
+  const isAdmin = USER?.role === 'ADMIN_OFFICER' || USER?.role === 'CEO';
+  const isTL = USER?.role === 'TEAM_LEADER';
+  let chips;
+  if (wayneLang === 'ta') {
+    chips = ['விடுப்பு சமநிலை', 'இன்று வருகை', 'விடுப்பு கோரிக்கை', 'அடுத்த விடுமுறை'];
+  } else if (isAdmin) {
+    chips = ['Payroll report this month', 'Download attendance CSV', 'Pending leave requests', 'Post an announcement'];
+  } else if (isTL) {
+    chips = ['My leave balance', 'Team pending leaves', 'Apply for leave', 'My attendance this month'];
+  } else {
+    chips = ['My leave balance', 'Today\'s attendance', 'Apply for leave', 'Next holiday'];
+  }
   const container = document.getElementById('wayneChips');
   container.innerHTML = chips.map(c =>
-    `<span class="wayne-chip" onclick="sendWayneMsg('${c}')">${c}</span>`
+    `<span class="wayne-chip" onclick="sendWayneMsg('${c.replace(/'/g,"\\'")}'">${c}</span>`
   ).join('');
 }
 
@@ -2682,6 +3517,465 @@ function sendWayneMsg(text) {
   sendWayne();
 }
 
+// ── Wayne AI Tool Definitions ──────────────────────────────
+const WAYNE_TOOLS = [
+  {
+    name: 'get_leave_balance',
+    description: 'Get the leave balance for an employee. Use employee_id null to get logged-in user\'s balance.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        employee_id: { type: 'string', description: 'Employee UUID, or null for logged-in user' },
+        year: { type: 'number', description: 'Year (default current year)' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'get_attendance_summary',
+    description: 'Get attendance records for an employee for a given month/year.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        employee_id: { type: 'string', description: 'Employee UUID, or null for logged-in user' },
+        month: { type: 'number', description: '1-12' },
+        year: { type: 'number', description: 'e.g. 2025' }
+      },
+      required: ['month', 'year']
+    }
+  },
+  {
+    name: 'apply_leave',
+    description: 'Apply for leave on behalf of the logged-in employee.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        leave_type: { type: 'string', enum: ['CASUAL','SICK','EARNED','LOP'], description: 'Type of leave' },
+        from_date: { type: 'string', description: 'YYYY-MM-DD' },
+        to_date: { type: 'string', description: 'YYYY-MM-DD' },
+        reason: { type: 'string', description: 'Reason for leave' }
+      },
+      required: ['leave_type','from_date','to_date','reason']
+    }
+  },
+  {
+    name: 'approve_leave',
+    description: 'Approve a pending leave request. Only available to Admin Officer, CEO, or Team Leader.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        leave_id: { type: 'string', description: 'UUID of the leave request to approve' }
+      },
+      required: ['leave_id']
+    }
+  },
+  {
+    name: 'get_pending_leaves',
+    description: 'Get list of pending leave requests visible to the current user.',
+    input_schema: { type: 'object', properties: {}, required: [] }
+  },
+  {
+    name: 'get_employees',
+    description: 'Get list of employees. Only available to Admin Officer, CEO, or Team Leader.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        department: { type: 'string', description: 'Optional: filter by department (DESIGN, DATA, MARKETING, LEADERSHIP)' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'get_payroll_report',
+    description: 'Get payroll report for a given month and year. Admin/CEO only.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        month: { type: 'number', description: '1-12' },
+        year: { type: 'number', description: 'e.g. 2025' }
+      },
+      required: ['month', 'year']
+    }
+  },
+  {
+    name: 'get_leave_report',
+    description: 'Get leave usage report for all employees for the current year. Admin/CEO only.',
+    input_schema: { type: 'object', properties: {}, required: [] }
+  },
+  {
+    name: 'download_report',
+    description: 'Trigger a CSV download for a report type (payroll, attendance, leaves, headcount). Admin/CEO only.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        report_type: { type: 'string', enum: ['payroll','attendance','leaves','headcount'], description: 'Type of report to download' },
+        month: { type: 'number', description: 'For payroll report: month 1-12' },
+        year: { type: 'number', description: 'For payroll report: year' }
+      },
+      required: ['report_type']
+    }
+  },
+  {
+    name: 'send_announcement',
+    description: 'Post a new company-wide announcement. Admin/CEO only.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Announcement title' },
+        body: { type: 'string', description: 'Announcement body text' },
+        priority: { type: 'string', enum: ['NORMAL','IMPORTANT','HIGH','URGENT'], description: 'Priority level' }
+      },
+      required: ['title','body']
+    }
+  }
+];
+
+// ── Execute a Wayne tool call ──────────────────────────────
+async function executeWayneTool(toolName, toolInput) {
+  const isAdmin = USER.role === 'ADMIN_OFFICER' || USER.role === 'CEO';
+  const isTL = USER.role === 'TEAM_LEADER';
+  const empId = toolInput.employee_id || USER.employeeId;
+  const yr = toolInput.year || new Date().getFullYear();
+
+  if (toolName === 'get_leave_balance') {
+    if (!isAdmin && !isTL && empId !== USER.employeeId) return { error: 'Permission denied' };
+    const { data } = await db.from('leave_balances').select('*').eq('employee_id', empId).eq('year', yr);
+    return data || [];
+  }
+
+  if (toolName === 'get_attendance_summary') {
+    if (!isAdmin && !isTL && empId !== USER.employeeId) return { error: 'Permission denied' };
+    const m = toolInput.month, y = toolInput.year;
+    const last = new Date(y, m, 0).getDate();
+    const { data } = await db.from('attendance').select('date,status,clock_in,clock_out,total_hours,overtime')
+      .eq('employee_id', empId)
+      .gte('date', `${y}-${pad(m)}-01`)
+      .lte('date', `${y}-${pad(m)}-${last}`)
+      .order('date');
+    return data || [];
+  }
+
+  if (toolName === 'apply_leave') {
+    if (!EMP) return { error: 'Employee profile not loaded' };
+    const { from_date, to_date, leave_type, reason } = toolInput;
+    // Calculate days
+    let days = 0;
+    const cur = new Date(from_date);
+    const end = new Date(to_date);
+    while (cur <= end) { const d = cur.getDay(); if (d !== 0 && d !== 6) days++; cur.setDate(cur.getDate()+1); }
+    const { error } = await db.from('leave_requests').insert({
+      employee_id: EMP.id, leave_type, from_date, to_date, total_days: days, reason, status: 'PENDING', is_half_day: false
+    });
+    if (error) return { error: error.message };
+    logAudit('LEAVE_APPLY','leave_requests',null,`Wayne: ${leave_type} for ${days} day(s) from ${from_date}`);
+    return { success: true, days_applied: days, leave_type, from_date, to_date };
+  }
+
+  if (toolName === 'approve_leave') {
+    if (!isAdmin && !isTL) return { error: 'Permission denied — only Admin/TL can approve' };
+    const { leave_id } = toolInput;
+    const { data: lv } = await db.from('leave_requests').select('*').eq('id', leave_id).single();
+    if (!lv) return { error: 'Leave request not found' };
+    const { error } = await db.from('leave_requests').update({ status: 'APPROVED', approved_by: EMP?.id, updated_at: new Date().toISOString() }).eq('id', leave_id);
+    if (error) return { error: error.message };
+    if (lv.leave_type !== 'LOP') {
+      const { data: bal } = await db.from('leave_balances').select('*').eq('employee_id', lv.employee_id).eq('leave_type', lv.leave_type).eq('year', new Date().getFullYear()).single();
+      if (bal) await db.from('leave_balances').update({ used: bal.used + lv.total_days, remaining: Math.max(0, bal.remaining - lv.total_days) }).eq('id', bal.id);
+    }
+    logAudit('LEAVE_APPROVE','leave_requests',leave_id,'Wayne: Approved');
+    return { success: true, approved_leave_id: leave_id };
+  }
+
+  if (toolName === 'get_pending_leaves') {
+    let q = db.from('leave_requests').select('id,leave_type,from_date,to_date,total_days,reason,employees(full_name,department)').eq('status','PENDING');
+    if (isTL && EMP) {
+      const { data: team } = await db.from('employees').select('id').eq('team_leader_id', EMP.id);
+      const ids = (team||[]).map(e=>e.id);
+      if (!ids.length) return [];
+      q = q.in('employee_id', ids);
+    } else if (!isAdmin) {
+      return { error: 'Permission denied' };
+    }
+    const { data } = await q.order('created_at', { ascending: false }).limit(20);
+    return data || [];
+  }
+
+  if (toolName === 'get_employees') {
+    if (!isAdmin && !isTL) return { error: 'Permission denied' };
+    let q = db.from('employees').select('id,full_name,department,designation,status');
+    if (isTL && EMP) q = q.eq('team_leader_id', EMP.id);
+    if (toolInput.department) q = q.eq('department', toolInput.department);
+    const { data } = await q.order('full_name').limit(50);
+    return data || [];
+  }
+
+  if (toolName === 'get_payroll_report') {
+    if (!isAdmin) return { error: 'Permission denied — Admin/CEO only' };
+    const { month, year } = toolInput;
+    const last = new Date(year, month, 0).getDate();
+    const { data } = await db.from('payslips').select('*,employees(full_name,department)').eq('month', month).eq('year', year);
+    if (!data?.length) return { message: `No payroll processed yet for ${MONTH_FULL[month-1]} ${year}` };
+    const summary = {
+      period: `${MONTH_FULL[month-1]} ${year}`,
+      total_employees: data.length,
+      total_gross: data.reduce((s,p) => s+(p.gross_salary||0), 0).toFixed(2),
+      total_deductions: data.reduce((s,p) => s+(p.total_deductions||0), 0).toFixed(2),
+      total_net: data.reduce((s,p) => s+(p.net_salary||0), 0).toFixed(2),
+      total_lop_days: data.reduce((s,p) => s+(p.lop_days||0), 0).toFixed(1),
+      employees: data.map(p => ({ name: p.employees?.full_name, net: p.net_salary, lop: p.lop_days }))
+    };
+    return summary;
+  }
+
+  if (toolName === 'get_leave_report') {
+    if (!isAdmin) return { error: 'Permission denied — Admin/CEO only' };
+    const yr = new Date().getFullYear();
+    const { data } = await db.from('leave_balances').select('*,employees(full_name,department)').eq('year', yr);
+    if (!data?.length) return { message: 'No leave balance data found' };
+    const byEmp = {};
+    data.forEach(b => {
+      const nm = b.employees?.full_name || 'Unknown';
+      if (!byEmp[nm]) byEmp[nm] = { name: nm, dept: b.employees?.department };
+      byEmp[nm][b.leave_type] = { total: b.total, used: b.used, remaining: b.remaining };
+    });
+    return { year: yr, employees: Object.values(byEmp) };
+  }
+
+  if (toolName === 'download_report') {
+    if (!isAdmin) return { error: 'Permission denied — Admin/CEO only' };
+    const { report_type, month, year } = toolInput;
+    // Trigger download client-side
+    setTimeout(() => {
+      if (report_type === 'payroll' && month && year) {
+        document.getElementById('pr-month').value = month;
+        document.getElementById('pr-year').value = year;
+        exportPayrollCSV();
+      } else if (report_type === 'attendance') exportAttendanceCSV();
+      else if (report_type === 'leaves') exportLeaveCSV();
+      else if (report_type === 'headcount') exportHeadcountCSV();
+    }, 300);
+    return { success: true, message: `Downloading ${report_type} report as CSV...` };
+  }
+
+  if (toolName === 'send_announcement') {
+    if (!isAdmin) return { error: 'Permission denied — Admin/CEO only' };
+    const { title, body, priority = 'NORMAL' } = toolInput;
+    const { error } = await db.from('announcements').insert({ title, body, priority, target_audience: 'ALL', posted_by: USER.id });
+    if (error) return { error: error.message };
+    await pushNotificationAll(`📢 ${title}`, body.slice(0, 120) + (body.length > 120 ? '...' : ''), 'ANNOUNCEMENT');
+    logAudit('POST_ANN', 'announcements', null, title);
+    return { success: true, message: `Announcement "${title}" posted to all employees.` };
+  }
+
+  return { error: 'Unknown tool: ' + toolName };
+}
+
+// ── Local Wayne AI engine — no external API ───────────────
+async function wayneProcess(msg) {
+  const q = msg.toLowerCase().trim();
+  const isAdmin = USER.role === 'ADMIN_OFFICER' || USER.role === 'CEO';
+  const isTL    = USER.role === 'TEAM_LEADER';
+  const name    = (USER.fullName || '').split(' ')[0];
+
+  // ── Greetings ────────────────────────────────────────────
+  if (/^(hi|hello|hey|good\s*(morning|afternoon|evening)|sup|yo|howdy)\b/.test(q)) {
+    const h = new Date().getHours();
+    const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    return `${g}, ${name}! 👋 I'm Wayne, your HR assistant.\n\nI can help you with:\n🌿 Leave balance & applications\n📅 Attendance status\n💰 Payslip info\n📢 Announcements\n🎉 Upcoming holidays${isAdmin||isTL ? '\n👥 Team & employee info\n📊 Reports' : ''}\n\nWhat do you need?`;
+  }
+
+  // ── Help ─────────────────────────────────────────────────
+  if (/help|what can you|commands|options|capabilities/.test(q)) {
+    return `Here's what I can do:\n\n🌿 "my leave balance"\n🌿 "apply casual leave for tomorrow"\n🌿 "apply sick leave from [date] to [date]"\n📅 "my attendance today"\n📅 "attendance this month"\n💰 "my latest payslip"\n💰 "my salary"\n📢 "latest announcements"\n🎉 "upcoming holidays"${isAdmin||isTL ? `\n👥 "list employees"\n📋 "pending leave requests"` : ''}${isAdmin ? `\n📊 "payroll report"\n📊 "download attendance CSV"` : ''}\n\nJust type naturally — I'll figure it out!`;
+  }
+
+  // ── Leave balance ────────────────────────────────────────
+  if (/leave balance|leaves left|leaves remaining|how many leaves|remaining leave/.test(q)) {
+    if (!EMP) return "Your employee profile isn't loaded. Try refreshing.";
+    const { data } = await db.from('leave_balances').select('*').eq('employee_id', EMP.id).eq('year', new Date().getFullYear());
+    if (!data?.length) return "No leave balance found for this year. Contact your Admin.";
+    const lines = data.map(b => `• ${b.leave_type.replace('_',' ')}: ${b.remaining} remaining (${b.used} used / ${b.total} total)`);
+    return `Your ${new Date().getFullYear()} leave balance:\n\n${lines.join('\n')}`;
+  }
+
+  // ── Apply leave ──────────────────────────────────────────
+  if (/apply.*leave|take.*leave|request.*leave|need.*leave|book.*leave/.test(q)) {
+    if (!EMP) return "Your employee profile isn't loaded. Try refreshing.";
+    let leaveType = 'CASUAL';
+    if (/sick|unwell|medical|ill/.test(q))   leaveType = 'SICK';
+    else if (/earned|annual|el\b/.test(q))   leaveType = 'EARNED';
+    else if (/lop|loss of pay/.test(q))      leaveType = 'LOP';
+
+    const today = new Date();
+    let fromDate = null, toDate = null;
+
+    if (/tomorrow/.test(q)) {
+      const t = new Date(today); t.setDate(t.getDate()+1);
+      fromDate = toDate = t.toISOString().split('T')[0];
+    } else if (/today/.test(q)) {
+      fromDate = toDate = todayStr();
+    } else if (/monday/.test(q)) { fromDate = toDate = nextWeekday(1); }
+    else if (/tuesday/.test(q))  { fromDate = toDate = nextWeekday(2); }
+    else if (/wednesday/.test(q)){ fromDate = toDate = nextWeekday(3); }
+    else if (/thursday/.test(q)) { fromDate = toDate = nextWeekday(4); }
+    else if (/friday/.test(q))   { fromDate = toDate = nextWeekday(5); }
+
+    // from X to Y pattern
+    const rangeMatch = q.match(/from\s+(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})/);
+    if (rangeMatch) { fromDate = rangeMatch[1]; toDate = rangeMatch[2]; }
+
+    if (!fromDate) {
+      return `Sure! Just tell me the dates too:\n"Apply ${leaveType.toLowerCase()} leave from YYYY-MM-DD to YYYY-MM-DD for [reason]"\n\nOr say "apply leave for tomorrow" for a single day.`;
+    }
+
+    const reasonMatch = q.match(/for\s+(.{3,80})$/);
+    const reason = reasonMatch ? reasonMatch[1].trim() : 'Personal work';
+
+    let days = 0;
+    const cur = new Date(fromDate), end = new Date(toDate);
+    while (cur <= end) { if (cur.getDay()!==0&&cur.getDay()!==6) days++; cur.setDate(cur.getDate()+1); }
+    if (days <= 0) return "That date range has no working days. Try different dates.";
+
+    if (leaveType !== 'LOP') {
+      const { data: bal } = await db.from('leave_balances').select('remaining').eq('employee_id', EMP.id).eq('leave_type', leaveType).eq('year', new Date().getFullYear()).single();
+      if (bal && bal.remaining < days) return `Not enough ${leaveType} leave. You have ${bal.remaining} day(s) remaining but need ${days}.`;
+    }
+
+    const { error } = await db.from('leave_requests').insert({ employee_id:EMP.id, leave_type:leaveType, from_date:fromDate, to_date:toDate, total_days:days, reason, status:'PENDING', is_half_day:false });
+    if (error) return `Failed to apply: ${error.message}`;
+    logAudit('LEAVE_APPLY','leave_requests',null,`Wayne: ${leaveType} ${days}d from ${fromDate}`);
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage === 'page-leaves') setTimeout(loadLeaves, 500);
+    return `✅ Done! Leave applied:\n• Type: ${leaveType}\n• From: ${fmtDate(fromDate)}\n• To: ${fmtDate(toDate)}\n• Days: ${days}\n• Reason: ${reason}\n• Status: Pending approval`;
+  }
+
+  // ── Today's attendance ───────────────────────────────────
+  if (/today.*attend|attend.*today|am i present|clocked in|current status|today.*status/.test(q)) {
+    if (!EMP) return "Your employee profile isn't loaded.";
+    const { data } = await db.from('attendance').select('*').eq('employee_id', EMP.id).eq('date', todayStr()).single();
+    if (!data) return `You haven't clocked in today yet.\nUse the Clock In button on the Dashboard.`;
+    const ci = data.clock_in ? fmtTime(new Date(data.clock_in)) : '—';
+    const co = data.clock_out ? fmtTime(new Date(data.clock_out)) : 'Still working';
+    return `Today's attendance:\n• Status: ${data.status}\n• Clock In: ${ci}\n• Clock Out: ${co}\n• Hours: ${data.total_hours ? fmtHrs(data.total_hours) : 'In progress'}${data.overtime>0 ? `\n• Overtime: ${fmtHrs(data.overtime)}` : ''}`;
+  }
+
+  // ── Monthly attendance ───────────────────────────────────
+  if (/this month|monthly attend|attend.*month|month.*attend/.test(q)) {
+    if (!EMP) return "Your employee profile isn't loaded.";
+    const now = new Date(), m = now.getMonth()+1, y = now.getFullYear();
+    const { data } = await db.from('attendance').select('status').eq('employee_id', EMP.id).gte('date',`${y}-${pad(m)}-01`).lte('date',`${y}-${pad(m)}-${new Date(y,m,0).getDate()}`);
+    if (!data?.length) return `No attendance records for ${MONTH_FULL[m-1]} ${y} yet.`;
+    const c = {PRESENT:0,LATE:0,HALF_DAY:0,ON_LEAVE:0,ABSENT:0};
+    data.forEach(r => { if(c[r.status]!==undefined) c[r.status]++; });
+    return `Attendance — ${MONTH_FULL[m-1]} ${y}:\n• Present: ${c.PRESENT}\n• Late: ${c.LATE}\n• Half Day: ${c.HALF_DAY}\n• On Leave: ${c.ON_LEAVE}\n• Total recorded: ${data.length} days`;
+  }
+
+  // ── Who is present today (admin/TL) ──────────────────────
+  if (/who.*present|who.*working|who.*online|who.*clocked|present today|working today/.test(q)) {
+    if (!isAdmin && !isTL) return "You don't have permission to view all attendance.";
+    const { data } = await db.from('attendance').select('status,clock_in,employees(full_name)').eq('date',todayStr()).in('status',['PRESENT','LATE','HALF_DAY']);
+    if (!data?.length) return `Nobody clocked in yet today (${fmtDate(todayStr())}).`;
+    return `Present today (${data.length}):\n${data.map(r=>`• ${r.employees?.full_name||'?'} — ${r.status}${r.clock_in ? ' since '+fmtTime(new Date(r.clock_in)) : ''}`).join('\n')}`;
+  }
+
+  // ── Pending leaves ───────────────────────────────────────
+  if (/pending leave|leave request|approve leave|leaves to approve/.test(q)) {
+    if (!isAdmin && !isTL) return "You don't have permission to view pending leaves.";
+    let qb = db.from('leave_requests').select('id,leave_type,from_date,to_date,total_days,reason,employees(full_name)').eq('status','PENDING');
+    if (isTL && EMP) {
+      const { data: team } = await db.from('employees').select('id').eq('team_leader_id', EMP.id);
+      const ids = (team||[]).map(e=>e.id);
+      if (!ids.length) return "No team members assigned to you.";
+      qb = qb.in('employee_id', ids);
+    }
+    const { data } = await qb.order('created_at',{ascending:false}).limit(10);
+    if (!data?.length) return "No pending leave requests right now. 🎉";
+    return `Pending leave requests (${data.length}):\n\n${data.map(r=>`• ${r.employees?.full_name||'?'}\n  ${r.leave_type} · ${fmtDate(r.from_date)}${r.from_date!==r.to_date?' → '+fmtDate(r.to_date):''} · ${r.total_days}d\n  "${r.reason}"`).join('\n\n')}\n\nGo to Leaves → Pending Approvals to action them.`;
+  }
+
+  // ── Payslip / salary ─────────────────────────────────────
+  if (/payslip|my salary|net salary|how much.*earn|latest pay|my pay/.test(q)) {
+    if (!EMP) return "Your employee profile isn't loaded.";
+    const { data } = await db.from('payslips').select('*').eq('employee_id', EMP.id).order('year',{ascending:false}).order('month',{ascending:false}).limit(1).single();
+    if (!data) return "No payslips yet. Payslips are generated by your Admin at month end.";
+    return `Latest payslip — ${MONTH_FULL[data.month-1]} ${data.year}:\n• Gross: ₹${(data.gross_salary||0).toLocaleString('en-IN')}\n• Deductions: ₹${(data.total_deductions||0).toLocaleString('en-IN')}\n• Net Salary: ₹${(data.net_salary||0).toLocaleString('en-IN')}\n• Present: ${data.present_days}/${data.working_days} days · LOP: ${data.lop_days||0} days\n\nGo to Payslips to download.`;
+  }
+
+  // ── Announcements ────────────────────────────────────────
+  if (/announcement|news|notice|what.*new|update/.test(q)) {
+    const { data } = await db.from('announcements').select('title,body,priority,created_at').order('created_at',{ascending:false}).limit(3);
+    if (!data?.length) return "No announcements posted yet.";
+    return `Latest announcements:\n\n${data.map(a=>`📢 [${a.priority}] ${a.title}\n${a.body.slice(0,120)}${a.body.length>120?'...':''}\n${fmtDate(a.created_at)}`).join('\n\n')}`;
+  }
+
+  // ── Holidays ─────────────────────────────────────────────
+  if (/holiday|day off|public holiday|next holiday|upcoming holiday/.test(q)) {
+    const { data } = await db.from('holidays').select('*').gte('date', todayStr()).order('date').limit(5);
+    if (!data?.length) return "No upcoming holidays found. Your Admin can add them in Settings.";
+    return `Upcoming holidays:\n${data.map(h=>`• ${h.name} — ${fmtDate(h.date)}`).join('\n')}`;
+  }
+
+  // ── Employees / team ─────────────────────────────────────
+  if (/employees|my team|team members|list.*staff|who.*team|staff list/.test(q)) {
+    if (!isAdmin && !isTL) return "You don't have permission to view the employee list.";
+    let qb = db.from('employees').select('full_name,department,designation,status');
+    if (isTL && EMP) qb = qb.eq('team_leader_id', EMP.id);
+    const { data } = await qb.order('full_name').limit(25);
+    if (!data?.length) return isTL ? "No team members assigned to you yet." : "No employees found.";
+    return `${isTL ? 'Your team' : 'Employees'} (${data.length}):\n${data.map(e=>`• ${e.full_name} — ${e.designation} · ${e.department}`).join('\n')}`;
+  }
+
+  // ── Payroll report (admin) ───────────────────────────────
+  if (/payroll report|payroll summary/.test(q) && isAdmin) {
+    const now = new Date();
+    const m = now.getMonth() > 0 ? now.getMonth() : 12;
+    const y = m === 12 ? now.getFullYear()-1 : now.getFullYear();
+    const { data } = await db.from('payslips').select('gross_salary,total_deductions,net_salary').eq('month',m).eq('year',y);
+    if (!data?.length) return `No payroll for ${MONTH_FULL[m-1]} ${y} yet. Go to Payslips → Process Payroll.`;
+    const gross = data.reduce((s,p)=>s+(p.gross_salary||0),0);
+    const net   = data.reduce((s,p)=>s+(p.net_salary||0),0);
+    const ded   = data.reduce((s,p)=>s+(p.total_deductions||0),0);
+    return `Payroll — ${MONTH_FULL[m-1]} ${y}:\n• Employees paid: ${data.length}\n• Total Gross: ₹${gross.toLocaleString('en-IN')}\n• Total Deductions: ₹${ded.toLocaleString('en-IN')}\n• Total Net: ₹${net.toLocaleString('en-IN')}\n\nGo to Reports → Payroll or download CSV.`;
+  }
+
+  // ── Download report (admin) ──────────────────────────────
+  if (/download.*csv|export.*report|download.*report|download.*attendance|download.*leave/.test(q) && isAdmin) {
+    if (/attendance/.test(q))     { setTimeout(exportAttendanceCSV, 300); return "⬇ Downloading attendance CSV..."; }
+    if (/leave/.test(q))          { setTimeout(exportLeaveCSV, 300);      return "⬇ Downloading leave report CSV..."; }
+    if (/payroll/.test(q))        { setTimeout(exportPayrollCSV, 300);    return "⬇ Downloading payroll CSV..."; }
+    if (/headcount|employee/.test(q)) { setTimeout(exportHeadcountCSV, 300); return "⬇ Downloading headcount CSV..."; }
+    return "Which report? Say: download attendance CSV, download leave CSV, download payroll CSV, or download headcount CSV.";
+  }
+
+  // ── Grievances ───────────────────────────────────────────
+  if (/grievance|complaint|issue|raise.*complaint/.test(q)) {
+    if (isAdmin) {
+      const { count } = await db.from('grievances').select('*',{count:'exact',head:true}).eq('status','OPEN');
+      return `There are currently ${count||0} open grievances. Go to the Grievances section to review them.`;
+    }
+    const { data } = await db.from('grievances').select('subject,status,created_at').eq('employee_id',EMP?.id||'').order('created_at',{ascending:false}).limit(5);
+    if (!data?.length) return "You have no grievances submitted. Go to Grievances to raise one.";
+    return `Your grievances:\n${data.map(g=>`• ${g.subject} — ${g.status} (${fmtDate(g.created_at)})`).join('\n')}`;
+  }
+
+  // ── Clock in/out ─────────────────────────────────────────
+  if (/clock in|check in|mark.*present/.test(q)) return "Use the Clock In button on the Dashboard. I can't do that directly — it needs to capture your exact timestamp.";
+  if (/clock out|check out/.test(q))             return "Use the Clock Out button on the Dashboard. I can't do that directly.";
+
+  // ── Non-HR ───────────────────────────────────────────────
+  if (/weather|news|joke|game|sport|movie|food|recipe/.test(q)) return "I can only help with HR queries — leaves, attendance, payslips, and company info. Try asking 'my leave balance' or 'today's attendance'.";
+
+  // ── Fallback ─────────────────────────────────────────────
+  return `I'm not sure about that. Try:\n• "my leave balance"\n• "apply casual leave for tomorrow"\n• "my attendance today"\n• "my latest payslip"\n• "upcoming holidays"\n• "latest announcements"${isAdmin||isTL ? '\n• "pending leave requests"\n• "list employees"' : ''}`;
+}
+
+function nextWeekday(target) {
+  const d = new Date();
+  const diff = (target - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
 async function sendWayne() {
   const input = document.getElementById('wayneInput');
   const text = input.value.trim();
@@ -2691,12 +3985,11 @@ async function sendWayne() {
   document.getElementById('wayneChips').innerHTML = '';
   addTyping();
 
-  // Build role-aware context
   const roleCtx = {
-    CEO: 'You can answer anything about any employee, salary, attendance, payroll, leaves, grievances, and company data.',
-    ADMIN_OFFICER: 'You can answer about all employees attendance, leaves, salaries, payroll processing, and grievances.',
-    TEAM_LEADER: 'You can answer about your own data and your team members attendance and leave status. You cannot share salary details.',
-    EMPLOYEE: 'You can only answer about the logged-in employee\'s own leave balance, attendance, payslips, policies, and next holiday. Never share other employees data.'
+    CEO: 'You have full access to all employee data, attendance, payroll, leaves, and grievances. You can use all tools.',
+    ADMIN_OFFICER: 'You have full access to all employee data, attendance, leaves, and grievances. You can use all tools.',
+    TEAM_LEADER: 'You can access your own data and your team members\' attendance and leave status. You cannot share salary details.',
+    EMPLOYEE: 'You can only access the logged-in employee\'s own leave balance, attendance, payslips, and next holiday.'
   };
 
   const langInstruction = wayneLang === 'ta'
@@ -2704,68 +3997,99 @@ async function sendWayne() {
     : 'Respond in English.';
 
   const systemPrompt = `You are Wayne AI, the HR assistant for StaffSync by Treffer Technologies.
-The logged-in user is: ${user.fullName}, Role: ${user.role}, Department: ${user.department || 'N/A'}.
-${roleCtx[user.role] || roleCtx['EMPLOYEE']}
+The logged-in user is: ${USER.fullName}, Role: ${USER.role}, Department: ${USER.department || 'N/A'}, Employee ID: ${USER.employeeId || 'N/A'}.
+${roleCtx[USER.role] || roleCtx['EMPLOYEE']}
 ${langInstruction}
-Keep answers concise, friendly and professional.
-If asked about unauthorized data, say: "You don't have permission to access that. Please contact your Admin Officer."
+Keep answers concise, friendly and professional. When performing actions (apply leave, approve leave), confirm clearly what was done.
+If asked about unauthorized data, say: "You don't have permission to access that."
 If asked non-HR questions, say: "I can only help with HR-related queries."
 Company: Treffer Technologies. Work model: Fully Remote. Working days: Mon-Fri. Standard hours: 9 AM - 6 PM.
-Leave policy: CL=12/year, SL=6/year, EL=15/year (carry forward up to 30).`;
+Leave policy: CL=12/year, SL=6/year, EL=15/year. Today's date: ${new Date().toLocaleDateString('en-IN')}.`;
 
   try {
-    // Fetch live context from Supabase based on question
-    let liveContext = '';
-    const q = text.toLowerCase();
-
-    if (q.includes('leave balance') || q.includes('விடுப்பு சமநிலை')) {
-      const { data } = await db.from('leave_balances').select('*')
-        .eq('employee_id', user.employeeId)
-        .eq('year', new Date().getFullYear());
-      if (data) liveContext = 'Live leave balances: ' + data.map(b => `${b.leave_type}: ${b.remaining} remaining of ${b.total}`).join(', ');
-    }
-    else if (q.includes('attendance') || q.includes('வருகை')) {
-      const today = new Date().toISOString().split('T')[0];
-      const { data } = await db.from('attendance').select('*')
-        .eq('employee_id', user.employeeId).eq('date', today).single();
-      if (data) liveContext = `Today's attendance: Status=${data.status}, ClockIn=${data.clock_in ? fmtTime(data.clock_in) : 'Not yet'}, Hours=${data.total_hours ? fmtHrs(data.total_hours) : 'In progress'}`;
-    }
-    else if (q.includes('holiday') || q.includes('விடுமுறை')) {
-      const { data } = await db.from('holidays').select('*')
-        .gte('date', new Date().toISOString().split('T')[0])
-        .order('date').limit(3);
-      if (data) liveContext = 'Upcoming holidays: ' + data.map(h => `${h.name} on ${fmtDate(h.date)}`).join(', ');
-    }
-    else if ((q.includes('payslip') || q.includes('salary')) && ['CEO','ADMIN_OFFICER'].includes(user.role)) {
-      const { data } = await db.from('payslips').select('*')
-        .eq('employee_id', user.employeeId).order('year',{ascending:false}).order('month',{ascending:false}).limit(1).single();
-      if (data) liveContext = `Latest payslip: Gross=₹${data.gross_salary}, Deductions=₹${data.total_deductions}, Net=₹${data.net_salary}`;
-    }
-
-    const messages = [
-      ...wayneHistory.slice(-6),
-      { role: 'user', content: liveContext ? `[Context: ${liveContext}]\n\nUser question: ${text}` : text }
+    let messages = [
+      ...wayneHistory.slice(-8).filter(m => m.role === 'user' || m.role === 'assistant'),
+      { role: 'user', content: text }
     ];
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages
-      })
-    });
+    // Agentic loop — keep calling until no more tool use
+    let finalReply = '';
+    for (let loop = 0; loop < 5; loop++) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-request-id': 'staffsync-wayne'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 1024,
+          system: systemPrompt,
+          tools: WAYNE_TOOLS,
+          messages
+        })
+      });
 
-    const data = await res.json();
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}));
+        removeTyping();
+        addMsg(`⚠️ API error ${res.status}: ${err?.error?.message || res.statusText}`, 'bot');
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.stop_reason === 'end_turn' || !data.content) {
+        finalReply = data.content?.find(c => c.type === 'text')?.text || '';
+        break;
+      }
+
+      if (data.stop_reason === 'tool_use') {
+        // Add assistant message with tool use blocks
+        messages.push({ role: 'assistant', content: data.content });
+
+        // Execute all tool calls
+        const toolResults = [];
+        for (const block of data.content) {
+          if (block.type === 'tool_use') {
+            const result = await executeWayneTool(block.name, block.input);
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: block.id,
+              content: JSON.stringify(result)
+            });
+          }
+        }
+
+        messages.push({ role: 'user', content: toolResults });
+        continue;
+      }
+
+      // Any other stop reason — grab text
+      finalReply = data.content?.find(c => c.type === 'text')?.text || '';
+      break;
+    }
+
     removeTyping();
-    const reply = data?.content?.[0]?.text || (wayneLang === 'ta' ? 'மன்னிக்கவும், மீண்டும் முயற்சிக்கவும்.' : 'Sorry, I couldn\'t process that. Please try again.');
+    const reply = finalReply || (wayneLang === 'ta' ? 'மன்னிக்கவும், மீண்டும் முயற்சிக்கவும்.' : 'Sorry, I couldn\'t process that. Please try again.');
     addMsg(reply, 'bot');
     renderChips();
+
+    // Refresh relevant pages if Wayne made changes
+    if (messages.some(m => Array.isArray(m.content) && m.content.some(b => b.type === 'tool_result'))) {
+      const activePage = document.querySelector('.page.active')?.id;
+      if (activePage === 'page-leaves') loadLeaves();
+      if (activePage === 'page-attendance') loadAttendance();
+      if (activePage === 'page-announcements') loadAnnouncements();
+      if (activePage === 'page-payslips') loadPayslips();
+    }
+
   } catch (err) {
     removeTyping();
     addMsg(wayneLang === 'ta' ? 'இணைப்பு பிழை. மீண்டும் முயற்சிக்கவும்.' : 'Connection error. Please try again.', 'bot');
+    console.error('Wayne error:', err);
   }
 }
 // ══════════════════════════════════════
